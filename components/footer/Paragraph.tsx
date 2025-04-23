@@ -1,14 +1,9 @@
 export default function Paragraph() {
     return (
-        <>
-            <div className="flex flex-col">
-                <h1 className="font-bold">LalalA</h1>
-                <div className="text-sm gap-1 flex flex-col">
-                    <p>Lalala</p>
-                    <p>Lalala</p>
-                    <p>Lalala</p>
-                </div>
-            </div>
-        </>
-    );
-}
+      <p className="text-gray-600">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit
+        amet, adipiscing nec, ultricies sed, dolor.
+      </p>
+    )
+  }
+  
