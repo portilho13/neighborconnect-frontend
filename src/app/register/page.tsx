@@ -332,7 +332,7 @@ export default function Register() {
                   <button
                     type="button"
                     onClick={prevStep}
-                    className="flex items-center text-white bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded-lg"
+                    className="flex items-center text-white bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded-xl"
                   >
                     <ChevronLeft className="mr-1 h-4 w-4" />
                     Previous
@@ -345,7 +345,7 @@ export default function Register() {
                   <button
                     type="button"
                     onClick={nextStep}
-                    className="flex items-center text-white bg-[#4987FF] hover:bg-[#3a78f0] transition-colors px-6 py-2 rounded-lg ml-auto"
+                    className="flex items-center text-white bg-[#4987FF] hover:bg-[#3a78f0] transition-colors px-6 py-2 rounded-xl ml-auto"
                   >
                     Next
                     <ChevronRight className="ml-1 h-4 w-4" />
@@ -353,7 +353,7 @@ export default function Register() {
                 ) : (
                   <button
                     type="submit"
-                    className="w-full bg-[#4987FF] hover:bg-[#3a78f0] transition-colors px-8 py-3 rounded-xl font-medium text-white shadow-lg shadow-[#4987FF]/30"
+                    className="w-1/2 bg-[#4987FF] hover:bg-[#3a78f0] transition-colors px-8 py-3 rounded-xl font-medium text-white shadow-lg shadow-[#4987FF]/30"
                   >
                     Create Account
                   </button>
