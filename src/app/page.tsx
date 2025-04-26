@@ -1,8 +1,16 @@
+'use client'
+
 import Image from "next/image"
 import Link from "next/link"
 import ImagemInicial from "../../images/ImagemInicial.svg"
+import { useRouter } from "next/navigation"
 
 export default function Home() {
+  const router = useRouter();
+
+  const redirectTo = (link: string) => {
+    router.push(link);
+  };
   return (
     <div className="min-h-screen bg-[#3F3D56] flex flex-col items-center justify-between">
       {/* Hero Section */}
@@ -32,8 +40,8 @@ export default function Home() {
               Connect with your neighbors, build community, and make your neighborhood a better place to live.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                className="bg-[#4987FF] hover:bg-[#3a78f0] transition-colors px-8 py-4 rounded-lg font-medium text-white shadow-lg shadow-[#4987FF]/30"
+              <button onClick={() => redirectTo("/register")}
+                className="bg-[#4987FF] hover:bg-[#3a78f0] transition-colors px-8 py-4 rounded-xl font-medium text-white shadow-lg shadow-[#4987FF]/30"
                 type="submit"
               >
                 Sign Up
