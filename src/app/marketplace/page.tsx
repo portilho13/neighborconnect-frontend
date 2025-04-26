@@ -16,23 +16,26 @@ type Listing = {
     expirationTime: Date;
     status: string;
     sellerId: number;
-  };
+};
+
+
+type Categories = {
+    id: number,
+    name: string,
+    url: string
+}
+
+
+
   
 
 export default function Marketplace() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [listings, setListings] = useState<Listing[]>([]);  
+  const [myAuctions, setMyAuctions] = useState<Listing[]>([]);
   const userName = "Rodrigo Moura"
 
-  // Categories data
-  const categories = [
-    { name: "Wine", image: "/placeholder.svg?height=200&width=200" },
-    { name: "Painting", image: "/placeholder.svg?height=200&width=200" },
-    { name: "Sculpture", image: "/placeholder.svg?height=200&width=200" },
-    { name: "Jewelry", image: "/placeholder.svg?height=200&width=200" },
-    { name: "Houses", image: "/placeholder.svg?height=200&width=200" },
-    { name: "Event tickets", image: "/placeholder.svg?height=200&width=200" },
-  ]
+  const [categories, setCategories] = useState<Categories[]>([]);
 
   // Trending auctions data
   const trendingAuctions = [
@@ -62,33 +65,6 @@ export default function Marketplace() {
     },
   ]
 
-  // My auctions data
-  const myAuctions = [
-    {
-      name: "Hermes Sculpture",
-      image: "/placeholder.svg?height=200&width=200",
-      currentBid: 1500,
-      buyNowPrice: 1520,
-    },
-    {
-      name: "Hermes Sculpture",
-      image: "/placeholder.svg?height=200&width=200",
-      currentBid: 1500,
-      buyNowPrice: 1520,
-    },
-    {
-      name: "Gucci Painting",
-      image: "/placeholder.svg?height=200&width=200",
-      currentBid: 4400,
-      buyNowPrice: 4450,
-    },
-    {
-      name: "Gucci Painting",
-      image: "/placeholder.svg?height=200&width=200",
-      currentBid: 4400,
-      buyNowPrice: 4450,
-    },
-  ]
 
   const fetchListings = async() => {
     try {
@@ -105,8 +81,24 @@ export default function Marketplace() {
     }
   }
 
+  const fetchCategories = async() => {
+    try {
+        const res = await fetch("http://localhost:1234/api/v1/category")
+        if (!res.ok) {
+            const errorMessage = await res.text();
+            throw new Error(errorMessage || 'Failed to register');
+        }
+
+        setCategories(await res.json())
+
+    } catch(error) {
+        console.error(error)
+    }
+  }
+
   useEffect(() => {
-    fetchListings()
+    fetchListings(),
+    fetchCategories()
   }, [])
 
   return (
@@ -227,7 +219,7 @@ export default function Marketplace() {
                 <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 group-hover:shadow-md group-hover:border-[#3F3D56]/20">
                   <div className="relative h-40 w-full">
                     <Image
-                      src={category.image || "/placeholder.svg"}
+                      src={category.url || "/placeholder.svg"}
                       alt={category.name}
                       fill
                       className="object-cover"
@@ -242,95 +234,105 @@ export default function Marketplace() {
           </div>
         </div>
 
-        {/* Trending Auction section */}
-        <div className="mb-12">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Trending Auction</h2>
-            <Link
-              href="/dashboard/marketplace/trending"
-              className="text-[#3F3D56] text-sm hover:underline flex items-center"
-            >
-              See All
-            </Link>
-          </div>
+        {listings && listings.length > 0 && (
+        <>
+            {/* Trending Auction section */}
+            <div className="mb-12">
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Trending Auction</h2>
+                <Link
+                href="/dashboard/marketplace/trending"
+                className="text-[#3F3D56] text-sm hover:underline flex items-center"
+                >
+                See All
+                </Link>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {listings.map((auction, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md hover:border-[#3F3D56]/20"
-              >
-                <div className="relative h-48 w-full">
-                  <Image src="/placeholder.svg" alt={auction.name} fill className="object-cover" />
-                  <button className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1.5 rounded-full hover:bg-white transition-colors">
-                    <Heart className="h-4 w-4 text-gray-600" />
-                  </button>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-medium text-gray-900 mb-2">{auction.name}</h3>
-                  <div className="flex flex-col gap-1 mb-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Current Bid</span>
-                      <span className="font-medium text-gray-900">${auction.current_bid}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {listings.map((auction, index) => (
+                <div
+                    key={index}
+                    className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md hover:border-[#3F3D56]/20"
+                >
+                    <div className="relative h-48 w-full">
+                    <Image src="/placeholder.svg" alt={auction.name} fill className="object-cover" />
+                    <button className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1.5 rounded-full hover:bg-white transition-colors">
+                        <Heart className="h-4 w-4 text-gray-600" />
+                    </button>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Buy Now Price</span>
-                      <span className="font-medium text-gray-900">${auction.buy_now_price}</span>
+                    <div className="p-4">
+                    <h3 className="font-medium text-gray-900 mb-2">{auction.name}</h3>
+                    <div className="flex flex-col gap-1 mb-3">
+                        <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Current Bid</span>
+                        <span className="font-medium text-gray-900">${auction.current_bid}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Buy Now Price</span>
+                        <span className="font-medium text-gray-900">${auction.buy_now_price}</span>
+                        </div>
                     </div>
-                  </div>
-                  <button className="w-full bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors">
-                    See more
-                  </button>
+                    <button className="w-full bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors">
+                        See more
+                    </button>
+                    </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
+                ))}
+            </div>
+            </div>
+        </>
+        )}
 
-        {/* My Auctions section */}
-        <div className="mb-12">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">My Auctions</h2>
-            <Link
-              href="/dashboard/marketplace/my-auctions"
-              className="text-[#3F3D56] text-sm hover:underline flex items-center"
-            >
-              See All
-            </Link>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {myAuctions.map((auction, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md hover:border-[#3F3D56]/20"
-              >
-                <div className="relative h-48 w-full">
-                  <Image src={auction.image || "/placeholder.svg"} alt={auction.name} fill className="object-cover" />
-                  <button className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1.5 rounded-full hover:bg-white transition-colors">
-                    <Heart className="h-4 w-4 text-gray-600" />
-                  </button>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-medium text-gray-900 mb-2">{auction.name}</h3>
-                  <div className="flex flex-col gap-1 mb-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Current Bid</span>
-                      <span className="font-medium text-gray-900">${auction.currentBid}</span>
+        {myAuctions && myAuctions.length > 0 && (
+        <>
+            {/* My Auctions section */}
+            <div className="mb-12">
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">My Auctions</h2>
+                <Link
+                href="/dashboard/marketplace/my-auctions"
+                className="text-[#3F3D56] text-sm hover:underline flex items-center"
+                >
+                See All
+                </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {myAuctions.map((auction, index) => (
+                <div
+                    key={index}
+                    className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md hover:border-[#3F3D56]/20"
+                >
+                    <div className="relative h-48 w-full">
+                    <Image src="/placeholder.svg" alt={auction.name} fill className="object-cover" />
+                    <button className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1.5 rounded-full hover:bg-white transition-colors">
+                        <Heart className="h-4 w-4 text-gray-600" />
+                    </button>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Buy Now Price</span>
-                      <span className="font-medium text-gray-900">${auction.buyNowPrice}</span>
+                    <div className="p-4">
+                    <h3 className="font-medium text-gray-900 mb-2">{auction.name}</h3>
+                    <div className="flex flex-col gap-1 mb-3">
+                        <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Current Bid</span>
+                        <span className="font-medium text-gray-900">${auction.current_bid}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Buy Now Price</span>
+                        <span className="font-medium text-gray-900">${auction.buy_now_price}</span>
+                        </div>
                     </div>
-                  </div>
-                  <button className="w-full bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors">
-                    See more
-                  </button>
+                    <button className="w-full bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors">
+                        See more
+                    </button>
+                    </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
+                ))}
+            </div>
+            </div>
+        </>
+        )}
+
       </main>
 
       {/* Footer */}
