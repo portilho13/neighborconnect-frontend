@@ -9,6 +9,7 @@ import { ArrowLeft, Eye, EyeOff } from "lucide-react"
 import LogoImage from '../../../images/ImagemInicial.svg'
 import { User } from "../../../lib/userStore"
 import useUserStore from "../../../lib/userStore"
+import { useRouter } from "next/navigation"
 
 
 export default function Login() {
@@ -23,6 +24,7 @@ export default function Login() {
   })
   const setUser = useUserStore((state) => state.setUser);
 
+  const router = useRouter()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -56,6 +58,7 @@ export default function Login() {
     return valid
   }
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (validateForm()) {
@@ -79,7 +82,7 @@ export default function Login() {
 
         const user: User = await res.json()
         setUser(user)
-
+        router.push("/dashboard")
       }catch(error) {
         console.log(error)
       }
