@@ -8,6 +8,7 @@ import Link from "next/link"
 import { ArrowLeft, Eye, EyeOff, ChevronLeft, ChevronRight } from "lucide-react"
 import LoadingSpinner from "../../../components/loading-spinner"
 import LogoImage from "../../../images/ImagemInicial.svg"
+import { useRouter } from "next/navigation"
 
 export default function Register() {
   const [currentStep, setCurrentStep] = useState(1)
@@ -121,6 +122,8 @@ export default function Register() {
     }
   }
 
+  const router = useRouter()
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (currentStep === totalSteps && validateStep2()) {
@@ -150,6 +153,7 @@ export default function Register() {
           console.error(err)
       } finally {
         setIsSubmitting(false)
+        router.push("/")
       }
     }
   }

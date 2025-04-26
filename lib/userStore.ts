@@ -4,13 +4,12 @@ import { persist, PersistOptions, createJSONStorage } from 'zustand/middleware'
 import { StateCreator } from 'zustand'
 
 // Define the user interface
-interface User {
+export interface User {
   id: string;
   name: string;
   email: string;
-  avatar?: string;
-  role?: string;
-  preferences?: Record<string, any>;
+  avatar: string;
+  role: string;
 }
 
 // Define the store state interface
