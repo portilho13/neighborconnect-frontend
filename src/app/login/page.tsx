@@ -7,6 +7,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { ArrowLeft, Eye, EyeOff } from "lucide-react"
 import LogoImage from '../../../images/ImagemInicial.svg'
+import { User } from "../../../lib/userStore"
+import useUserStore from "../../../lib/userStore"
 
 
 export default function Login() {
@@ -19,6 +21,8 @@ export default function Login() {
     email: "",
     password: "",
   })
+  const setUser = useUserStore((state) => state.setUser);
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -52,12 +56,33 @@ export default function Login() {
     return valid
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (validateForm()) {
-      // Submit form data to your backend
-      console.log("Login form submitted:", formData)
-      // Redirect or show success message
+      try {
+        const res = await fetch("http://localhost:1234/api/v1/client/login", {
+          method: "POST",
+          headers: {
+              'Content-Type': 'application/json',
+            },
+          body: JSON.stringify({
+              email: formData.email,
+              password: formData.password,
+          })
+        })
+
+        
+        if (!res.ok) {
+          const errorMessage = await res.text();
+          throw new Error(errorMessage || 'Failed to register');
+        }
+
+        const user: User = await res.json()
+        setUser(user)
+
+      }catch(error) {
+        console.log(error)
+      }
     }
   }
 

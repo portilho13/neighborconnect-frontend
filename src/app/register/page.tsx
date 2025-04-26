@@ -2,16 +2,18 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowLeft, Eye, EyeOff, ChevronLeft, ChevronRight } from "lucide-react"
+import LoadingSpinner from "../../../components/loading-spinner"
+import LogoImage from "../../../images/ImagemInicial.svg"
 import { useRouter } from "next/navigation"
-import LogoImage from '../../../images/ImagemInicial.svg'
 
 export default function Register() {
   const [currentStep, setCurrentStep] = useState(1)
   const totalSteps = 2
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -31,9 +33,6 @@ export default function Register() {
     confirmPassword: "",
     apartmentId: "",
   })
-
-  const router = useRouter()
-
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -78,7 +77,7 @@ export default function Register() {
     if (!formData.password) {
       newErrors.password = "Password is required"
       valid = false
-    } else if (formData.password.length < 8) {
+    } else if (formData.password.length < 3) {
       newErrors.password = "Password must be at least 8 characters"
       valid = false
     }
@@ -123,33 +122,39 @@ export default function Register() {
     }
   }
 
+  const router = useRouter()
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (currentStep === totalSteps && validateStep2()) {
-        try {
-            const res = await fetch("http://localhost:1234/api/v1/client/register", {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                  },
-                body: JSON.stringify({
-                    name: formData.name,
-                    email: formData.email,
-                    password: formData.password,
-                    phone: formData.phone,
-                    apartment_id: parseInt(formData.apartmentId)
-                })
+      setIsSubmitting(true)
+
+      try {
+        const res = await fetch("http://localhost:1234/api/v1/client/register", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+              },
+            body: JSON.stringify({
+                name: formData.name,
+                email: formData.email,
+                password: formData.password,
+                phone: formData.phone,
+                apartment_id: parseInt(formData.apartmentId)
             })
+        })
 
-            if (!res.ok) {
-                const errorMessage = await res.text();
-                throw new Error(errorMessage || 'Failed to register');
-            }
-
-            router.push('/')
-        }catch(err) {
-            console.error(err)
+        if (!res.ok) {
+            const errorMessage = await res.text();
+            throw new Error(errorMessage || 'Failed to register');
         }
+
+      }catch(err) {
+          console.error(err)
+      } finally {
+        setIsSubmitting(false)
+        router.push("/")
+      }
     }
   }
 
@@ -181,7 +186,7 @@ export default function Register() {
           </div>
 
           {/* Registration Form */}
-          <div className="w-full max-w-md bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-xl">
+          <div className="w-full max-w-md bg-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-xl relative">
             <h1 className="text-white text-center font-bold text-3xl mb-6">Create Your Account</h1>
 
             {/* Progress Bar */}
@@ -332,7 +337,8 @@ export default function Register() {
                   <button
                     type="button"
                     onClick={prevStep}
-                    className="flex items-center text-white bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded-xl"
+                    className="flex items-center text-white bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded-lg"
+                    disabled={isSubmitting}
                   >
                     <ChevronLeft className="mr-1 h-4 w-4" />
                     Previous
@@ -345,7 +351,7 @@ export default function Register() {
                   <button
                     type="button"
                     onClick={nextStep}
-                    className="flex items-center text-white bg-[#4987FF] hover:bg-[#3a78f0] transition-colors px-6 py-2 rounded-xl ml-auto"
+                    className="flex items-center text-white bg-[#4987FF] hover:bg-[#3a78f0] transition-colors px-6 py-2 rounded-lg ml-auto"
                   >
                     Next
                     <ChevronRight className="ml-1 h-4 w-4" />
@@ -353,9 +359,11 @@ export default function Register() {
                 ) : (
                   <button
                     type="submit"
-                    className="w-1/2 bg-[#4987FF] hover:bg-[#3a78f0] transition-colors px-8 py-3 rounded-xl font-medium text-white shadow-lg shadow-[#4987FF]/30"
+                    className="w-full bg-[#4987FF] hover:bg-[#3a78f0] transition-colors px-8 py-3 rounded-xl font-medium text-white shadow-lg shadow-[#4987FF]/30 relative disabled:opacity-70"
+                    disabled={isSubmitting}
                   >
-                    Create Account
+                    {isSubmitting && <LoadingSpinner loading={true} size="lg" className="absolute left-4" />}
+                    {isSubmitting ? "Creating Account..." : "Create Account"}
                   </button>
                 )}
               </div>
@@ -369,6 +377,13 @@ export default function Register() {
                 </Link>
               </p>
             </div>
+
+            {/* Form loading overlay */}
+            {isSubmitting && (
+              <div className="absolute inset-0 bg-[#3F3D56]/50 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                <LoadingSpinner loading={true} size="lg" text="Creating your account..." />
+              </div>
+            )}
           </div>
         </div>
       </div>
