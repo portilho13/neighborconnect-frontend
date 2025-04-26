@@ -7,9 +7,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { ArrowLeft, Eye, EyeOff } from "lucide-react"
 import LogoImage from '../../../images/ImagemInicial.svg'
-import { User } from "../../../lib/userStore"
-import useUserStore from "../../../lib/userStore"
 import { useRouter } from "next/navigation"
+import useUserStore from "../../../lib/userStore"
+import { User } from "../../../lib/userStore"
 
 
 export default function Login() {
