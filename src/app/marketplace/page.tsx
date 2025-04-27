@@ -4,6 +4,8 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Search, Bell, Menu, Heart } from "lucide-react"
+import useUserStore from "../../../lib/userStore"
+
 
 type Listing = {
     id: number;
@@ -33,7 +35,8 @@ export default function Marketplace() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [listings, setListings] = useState<Listing[]>([]);  
   const [myAuctions, setMyAuctions] = useState<Listing[]>([]);
-  const userName = "Rodrigo Moura"
+  const user = useUserStore((state) => state.user);
+
 
   const [categories, setCategories] = useState<Categories[]>([]);
 
@@ -144,9 +147,9 @@ export default function Marketplace() {
 
             <div className="hidden md:flex items-center gap-3">
               <div className="h-8 w-8 rounded-full bg-[#3F3D56] flex items-center justify-center text-white">
-                <span className="font-medium text-sm">{userName.charAt(0)}</span>
+                <span className="font-medium text-sm">{user?.name.charAt(0)}</span>
               </div>
-              <span className="text-sm font-medium text-gray-900">{userName}</span>
+              <span className="text-sm font-medium text-gray-900">{user?.name}</span>
             </div>
 
             <button
@@ -163,9 +166,9 @@ export default function Marketplace() {
           <div className="md:hidden bg-white border-t border-gray-200 py-3 px-4">
             <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-200">
               <div className="h-8 w-8 rounded-full bg-[#3F3D56] flex items-center justify-center text-white">
-                <span className="font-medium text-sm">{userName.charAt(0)}</span>
+                <span className="font-medium text-sm">{user?.name.charAt(0)}</span>
               </div>
-              <span className="text-sm font-medium text-gray-900">{userName}</span>
+              <span className="text-sm font-medium text-gray-900">{user?.name}</span>
             </div>
 
             <div className="relative mb-4">

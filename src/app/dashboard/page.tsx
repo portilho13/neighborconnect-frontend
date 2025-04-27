@@ -48,9 +48,6 @@ export default function Dashboard() {
 
   const user = useUserStore((state) => state.user);
 
-  useEffect(() => {
-    console.log(user)
-  })
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -69,11 +66,8 @@ export default function Dashboard() {
               <Link href="/activities" className="text-gray-600 hover:text-gray-900 transition-colors">
                 Activities
               </Link>
-              <Link href="/auction" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Auction
-              </Link>
-              <Link href="/community" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Community
+              <Link href="/marketplace" className="text-gray-600 hover:text-gray-900 transition-colors">
+                Marketplace
               </Link>
             </nav>
           </div>
