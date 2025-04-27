@@ -393,24 +393,6 @@ export default function Activities() {
           </div>
         </section>
 
-        {/* Create activity CTA */}
-        <section className="bg-gradient-to-r from-[#3F3D56] to-[#2d2b40] rounded-xl p-8 mb-12">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="mb-6 md:mb-0">
-              <h2 className="text-2xl font-bold text-white mb-2">Create Your Own Activity</h2>
-              <p className="text-white/80">
-                Have an idea for a community event? Create your own activity and invite your neighbors to join.
-              </p>
-            </div>
-            <Link
-              href="/activities/create"
-              className="bg-white text-[#3F3D56] px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-            >
-              Create Activity
-            </Link>
-          </div>
-        </section>
-
         {/* Activity calendar */}
         <section className="mb-12">
           <div className="flex justify-between items-center mb-6">
