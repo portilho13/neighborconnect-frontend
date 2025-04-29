@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import {
   Search,
@@ -19,6 +19,24 @@ import {
 } from "lucide-react"
 
 import useUserStore from "../../../lib/userStore"
+import LoadingSpinner from "../../../components/loading-spinner"
+
+
+interface Rent {
+  id: number;
+  month: number;
+  year: number;
+  base_amount: number;
+  reduction: number;
+  final_amount: number;
+  apartment_id: number;
+  status: string;
+}
+
+const months = [ "January", "February", "March", "April", "May", "June", 
+  "July", "August", "September", "October", "November", "December" ];
+
+const maxDiscout = 400
 
 export default function Dashboard() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -28,65 +46,57 @@ export default function Dashboard() {
   const formattedDate = currentDate.toLocaleDateString("pt-PT", options)
   const endDate = "Jan 31"
 
+  const [isLoading, setIsLoading] = useState(false)
+
+  const [rents, setRents] = useState<Rent[]>([])
+
+
+  const user = useUserStore((state) => state.user)
+
+  const fetchRent = async(apartment_id: Number) => {
+    setIsLoading(true)
+    try {
+      const res = await fetch(`http://localhost:1234/api/v1/rent?apartment_id=${apartment_id}`)
+
+      if (!res.ok) {
+        const errorMessage = await res.text();
+        throw new Error(errorMessage || 'Failed to register');
+      }
+      
+      const data: Rent[] = await res.json()
+
+      setRents(data)
+    } catch(error) {
+      console.error(error)
+    }finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (user?.apartmentId) {
+      fetchRent(user?.apartmentId)
+    }
+  }, [user])
+
+
   // Rent data with discount information
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0)
-  const rentHistory = [
-    {
-      month: "April 2025",
-      baseAmount: 1200,
-      discount: 100,
-      paid: true,
-      dueDate: "Apr 30",
-      maxDiscount: 200,
-    },
-    {
-      month: "March 2025",
-      baseAmount: 1200,
-      discount: 150,
-      paid: true,
-      dueDate: "Mar 31",
-      maxDiscount: 200,
-    },
-    {
-      month: "February 2025",
-      baseAmount: 1200,
-      discount: 50,
-      paid: true,
-      dueDate: "Feb 28",
-      maxDiscount: 200,
-    },
-    {
-      month: "January 2025",
-      baseAmount: 1200,
-      discount: 0,
-      paid: true,
-      dueDate: "Jan 31",
-      maxDiscount: 200,
-    },
-    {
-      month: "December 2024",
-      baseAmount: 1200,
-      discount: 100,
-      paid: true,
-      dueDate: "Dec 31",
-      maxDiscount: 200,
-    },
-    {
-      month: "November 2024",
-      baseAmount: 1200,
-      discount: 0,
-      paid: false,
-      dueDate: "Nov 30",
-      maxDiscount: 200,
-    },
-  ]
 
-  const currentRent = rentHistory[currentMonthIndex]
-  const finalAmount = currentRent.baseAmount - currentRent.discount
-  const discountPercentage = (currentRent.discount / currentRent.maxDiscount) * 100
+
+  if (isLoading) {
+    return <LoadingSpinner loading={true} size="lg" className="absolute left-4" />;
+  }
+
+  const currentRent = rents[currentMonthIndex]
+  if (!currentRent) {
+    return <div>Rent information not found for the selected month.</div>;
+  }
+  const finalAmount = currentRent.base_amount - currentRent.reduction
+  const discountPercentage = (currentRent.reduction / maxDiscout) * 100 // Change this later
 
   // Update the progress calculation for the circle to show percentage of rent being paid after discount
-  const percentagePaid = (finalAmount / currentRent.baseAmount) * 100;
+  const percentagePaid = (finalAmount / currentRent.base_amount) * 100;
 
   // Calculate the circle's circumference and offset
   const radius = 70;
@@ -95,7 +105,7 @@ export default function Dashboard() {
 
   // Navigation functions
   const goToPreviousMonth = () => {
-    if (currentMonthIndex < rentHistory.length - 1) {
+    if (currentMonthIndex < rents.length - 1) {
       setCurrentMonthIndex(currentMonthIndex + 1)
     }
   }
@@ -113,9 +123,6 @@ export default function Dashboard() {
     if (hour < 18) return "Good Afternoon"
     return "Good Evening"
   }
-
-  const user = useUserStore((state) => state.user)
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -222,17 +229,17 @@ export default function Dashboard() {
             <div className="flex justify-between items-center mb-6">
               <div className="flex items-center">
                 <h2 className="text-xl font-semibold text-gray-900">Your Rent</h2>
-                <span className="text-xl font-semibold ml-2 text-[#3F3D56]">- {currentRent.month}</span>
+                <span className="text-xl font-semibold ml-2 text-[#3F3D56]">- {months[currentRent.month - 1]}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
                   onClick={goToPreviousMonth}
-                  disabled={currentMonthIndex >= rentHistory.length - 1}
+                  disabled={currentMonthIndex >= rents.length - 1}
                   aria-label="Previous month"
                 >
                   <ChevronLeft
-                    className={`h-5 w-5 ${currentMonthIndex >= rentHistory.length - 1 ? "opacity-50" : ""}`}
+                    className={`h-5 w-5 ${currentMonthIndex >= rents.length - 1 ? "opacity-50" : ""}`}
                   />
                 </button>
                 <button
@@ -275,9 +282,9 @@ export default function Dashboard() {
 
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <div className="flex flex-col items-center">
-                    <span className="text-xl font-bold text-gray-900">${currentRent.baseAmount}</span>
+                    <span className="text-xl font-bold text-gray-900">${currentRent.base_amount}</span>
                     <div className="flex items-center gap-1 text-red-500">
-                      <span className="text-lg">-${currentRent.discount}</span>
+                      <span className="text-lg">-${currentRent.reduction}</span>
                     </div>
                     <div className="w-24 h-px bg-gray-200 my-2"></div>
                     <span className="text-2xl font-bold text-gray-900">${finalAmount}</span>
@@ -291,7 +298,7 @@ export default function Dashboard() {
                     <span className="text-gray-600">Discount Progress</span>
                     <div className="flex items-center">
                       <span className="text-sm font-medium text-gray-900">
-                        ${currentRent.discount}/${currentRent.maxDiscount}
+                        ${currentRent.reduction}/${maxDiscout}
                       </span>
                     </div>
                   </div>
@@ -301,7 +308,7 @@ export default function Dashboard() {
                       style={{ width: `${discountPercentage}%` }}
                     ></div>
                   </div>
-                  <div className="mt-2 text-xs text-gray-400">Due by {currentRent.dueDate}</div>
+                  <div className="mt-2 text-xs text-gray-400">Due by 1</div>
                 </div>
                 
                 {/* Payment Status - Added between discount progress and buttons */}
@@ -309,7 +316,7 @@ export default function Dashboard() {
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Payment Status</span>
                     <div className="flex items-center">
-                      {currentRent.paid ? (
+                      {currentRent.status === "paid" ? (
                         <span className="flex items-center text-green-600 text-sm font-medium">
                           <Check className="h-4 w-4 mr-1" /> Paid
                         </span>
@@ -329,14 +336,14 @@ export default function Dashboard() {
                   </button>
                   <button
                     className={`flex items-center justify-center gap-2 rounded-lg py-3 font-medium ${
-                      currentRent.paid
+                      currentRent.status === "paid"
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                         : "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
                     }`}
-                    disabled={currentRent.paid}
+                    disabled={currentRent.status === "paid"}
                   >
                     <CreditCard className="h-4 w-4" />
-                    {currentRent.paid ? "Paid" : "Pay Rent"}
+                    {currentRent.status === "paid" ? "Paid" : "Pay Rent"}
                   </button>
                 </div>
               </div>
