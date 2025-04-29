@@ -7,7 +7,7 @@ import { Search, Bell, Menu, Heart } from "lucide-react"
 import useUserStore from "../../../lib/userStore"
 
 
-type Listing = {
+interface Listing {
     id: number;
     name: string;
     description: string;
@@ -21,7 +21,7 @@ type Listing = {
 };
 
 
-type Categories = {
+interface Category {
     id: number,
     name: string,
     url: string
@@ -38,7 +38,7 @@ export default function Marketplace() {
   const user = useUserStore((state) => state.user);
 
 
-  const [categories, setCategories] = useState<Categories[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   // Trending auctions data
   const trendingAuctions = [
@@ -200,7 +200,9 @@ export default function Marketplace() {
 
       {/* Main content */}
       <main className="container mx-auto px-4 py-8">
-        {/* Categories section */}
+        {categories && categories.length > 0 && (
+          <>       
+           {/* Categories section */}
         <div className="mb-12">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Categories</h2>
@@ -236,6 +238,8 @@ export default function Marketplace() {
             ))}
           </div>
         </div>
+          </>
+        )}
 
         {listings && listings.length > 0 && (
         <>

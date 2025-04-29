@@ -1,99 +1,74 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Search, Bell, Menu, Calendar, Users, MapPin, Clock, Filter, ChevronDown } from "lucide-react"
 
+interface Event {
+  id: number;
+  name: string;
+  percentage: number;
+  capacity: number;
+  date_time: string;
+  manager_id: number;
+  event_image: string;
+  duration: number;
+  local: string;
+  current_ocupation: number;
+}
+
+
 export default function Activities() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [filterOpen, setFilterOpen] = useState(false)
+  const [events, setEvents] = useState<Event[]>([])
+  const [upcommingEvents, setUpcommingEvents] = useState<Event[]>([])
   const userName = "Rodrigo Moura"
 
-  // Featured activities data
-  const featuredActivities = [
-    {
-      id: 1,
-      title: "Community Garden Project",
-      image: "/placeholder.svg?height=300&width=600",
-      date: "May 15, 2023",
-      time: "9:00 AM - 12:00 PM",
-      location: "Central Park",
-      participants: 24,
-      category: "Volunteer",
-      description: "Join us in planting and maintaining our community garden. All tools and supplies provided.",
-    },
-    {
-      id: 2,
-      title: "Neighborhood Cleanup Day",
-      image: "/placeholder.svg?height=300&width=600",
-      date: "May 22, 2023",
-      time: "10:00 AM - 2:00 PM",
-      location: "Main Street",
-      participants: 18,
-      category: "Volunteer",
-      description: "Help keep our neighborhood clean and beautiful. Gloves and trash bags will be provided.",
-    },
-    {
-      id: 3,
-      title: "Weekly Yoga in the Park",
-      image: "/placeholder.svg?height=300&width=600",
-      date: "Every Saturday",
-      time: "8:00 AM - 9:00 AM",
-      location: "Sunset Park",
-      participants: 15,
-      category: "Fitness",
-      description: "Outdoor yoga session for all levels. Bring your own mat and water bottle.",
-    },
-  ]
+  const fetchEvents = async() => {
+    try {
+      const res = await fetch("http://localhost:1234/api/v1/event")
+
+      if (!res.ok) {
+        const errorMessage = await res.text();
+        throw new Error(errorMessage || 'Failed to register');
+      }
+      
+      const data = await res.json()
+      setEvents(data)
+
+      const upEventsFilter: Event[] = []
+
+      data.forEach((event: Event) => {
+        const givenDate = new Date(event.date_time)
+
+        const currentDate = new Date()
+
+        const timeDifference = givenDate.getTime() - currentDate.getTime()
+
+        const oneWeekInMillis = 7 * 24 * 60 * 60 * 1000;
+
+        if (timeDifference < oneWeekInMillis) {
+          upEventsFilter.push(event)
+        }
+      });
+
+      setUpcommingEvents(upEventsFilter)
+    } catch(error) {
+      console.error(error)
+    }
+  }
+
+  useEffect(() => {
+    fetchEvents()
+  }, [])
+ 
 
   // Upcoming activities data
-  const upcomingActivities = [
-    {
-      id: 4,
-      title: "Book Club Meeting",
-      image: "/placeholder.svg?height=200&width=300",
-      date: "June 5, 2023",
-      time: "7:00 PM - 8:30 PM",
-      location: "Community Center",
-      participants: 12,
-      category: "Education",
-      description: "Discussion of 'The Great Gatsby' by F. Scott Fitzgerald.",
-    },
-    {
-      id: 5,
-      title: "Farmers Market",
-      image: "/placeholder.svg?height=200&width=300",
-      date: "June 10, 2023",
-      time: "8:00 AM - 1:00 PM",
-      location: "Town Square",
-      participants: 45,
-      category: "Community",
-      description: "Local farmers and artisans selling fresh produce and handmade goods.",
-    },
-    {
-      id: 6,
-      title: "Children's Art Workshop",
-      image: "/placeholder.svg?height=200&width=300",
-      date: "June 12, 2023",
-      time: "3:00 PM - 5:00 PM",
-      location: "Community Library",
-      participants: 20,
-      category: "Education",
-      description: "Art workshop for children ages 5-12. All materials provided.",
-    },
-    {
-      id: 7,
-      title: "Community Board Meeting",
-      image: "/placeholder.svg?height=200&width=300",
-      date: "June 15, 2023",
-      time: "6:30 PM - 8:00 PM",
-      location: "Town Hall",
-      participants: 30,
-      category: "Community",
-      description: "Monthly meeting to discuss neighborhood issues and improvements.",
-    },
-  ]
+  const fetchUpcommingEvents = () => {
+
+  }
 
   // Activity categories
   const categories = [
@@ -212,20 +187,6 @@ export default function Activities() {
 
         {/* Filter and sort section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category, index) => (
-              <button
-                key={index}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  category.name === "All"
-                    ? "bg-[#3F3D56] text-white"
-                    : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
-                }`}
-              >
-                {category.name} ({category.count})
-              </button>
-            ))}
-          </div>
 
           <div className="flex gap-2">
             <button
@@ -286,41 +247,38 @@ export default function Activities() {
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Activities</h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {featuredActivities.map((activity) => (
+            {events.map((event) => (
               <div
-                key={activity.id}
+                key={event.id}
                 className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md hover:border-[#3F3D56]/20"
               >
                 <div className="relative h-48 w-full">
                   <Image
-                    src={activity.image || "/placeholder.svg"}
-                    alt={activity.title}
+                    src="/placeholder.svg"
+                    alt={event.name}
                     fill
                     className="object-cover"
                   />
-                  <div className="absolute top-3 right-3 bg-[#3F3D56] text-white text-xs font-medium px-2 py-1 rounded">
-                    {activity.category}
-                  </div>
                 </div>
                 <div className="p-5">
-                  <h3 className="font-semibold text-xl text-gray-900 mb-2">{activity.title}</h3>
-                  <p className="text-gray-600 text-sm mb-4">{activity.description}</p>
+                  <h3 className="font-semibold text-xl text-gray-900 mb-2">{event.name}</h3>
+                  <p className="text-gray-600 text-sm mb-4">{event.percentage}</p>
                   <div className="flex flex-col gap-2 mb-4">
                     <div className="flex items-center text-sm text-gray-600">
                       <Calendar className="h-4 w-4 mr-2 text-[#3F3D56]" />
-                      {activity.date}
+                      {event.date_time}
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <Clock className="h-4 w-4 mr-2 text-[#3F3D56]" />
-                      {activity.time}
+                      {event.date_time}
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <MapPin className="h-4 w-4 mr-2 text-[#3F3D56]" />
-                      {activity.location}
+                      {event.local}
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <Users className="h-4 w-4 mr-2 text-[#3F3D56]" />
-                      {activity.participants} participants
+                      {event.current_ocupation} participants
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -328,7 +286,7 @@ export default function Activities() {
                       Join Activity
                     </button>
                     <Link
-                      href={`/activities/${activity.id}`}
+                      href={`/activities/${event.id}`}
                       className="px-4 py-2 border border-gray-200 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       Details
@@ -349,40 +307,37 @@ export default function Activities() {
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {upcomingActivities.map((activity) => (
+            {upcommingEvents.map((event) => (
               <div
-                key={activity.id}
+                key={event.id}
                 className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md hover:border-[#3F3D56]/20"
               >
                 <div className="relative h-40 w-full">
                   <Image
-                    src={activity.image || "/placeholder.svg"}
-                    alt={activity.title}
+                    src="/placeholder.svg"
+                    alt={event.name}
                     fill
                     className="object-cover"
                   />
-                  <div className="absolute top-3 right-3 bg-[#3F3D56] text-white text-xs font-medium px-2 py-1 rounded">
-                    {activity.category}
-                  </div>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-medium text-lg text-gray-900 mb-2">{activity.title}</h3>
+                  <h3 className="font-medium text-lg text-gray-900 mb-2">{event.name}</h3>
                   <div className="flex flex-col gap-1 mb-3">
                     <div className="flex items-center text-xs text-gray-600">
                       <Calendar className="h-3 w-3 mr-1 text-[#3F3D56]" />
-                      {activity.date}
+                      {event.date_time}
                     </div>
                     <div className="flex items-center text-xs text-gray-600">
                       <Clock className="h-3 w-3 mr-1 text-[#3F3D56]" />
-                      {activity.time}
+                      {event.date_time}
                     </div>
                     <div className="flex items-center text-xs text-gray-600">
                       <MapPin className="h-3 w-3 mr-1 text-[#3F3D56]" />
-                      {activity.location}
+                      {event.local}
                     </div>
                   </div>
                   <Link
-                    href={`/activities/${activity.id}`}
+                    href={`/activities/${event.id}`}
                     className="block w-full text-center bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors"
                   >
                     View Details

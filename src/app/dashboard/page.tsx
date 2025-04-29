@@ -63,8 +63,8 @@ export default function Dashboard() {
               <Link href="/dashboard" className="text-gray-900 font-medium">
                 Home
               </Link>
-              <Link href="/activities" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Activities
+              <Link href="/events" className="text-gray-600 hover:text-gray-900 transition-colors">
+                Events
               </Link>
               <Link href="/marketplace" className="text-gray-600 hover:text-gray-900 transition-colors">
                 Marketplace
