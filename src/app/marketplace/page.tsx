@@ -121,10 +121,7 @@ export default function Marketplace() {
               <Link href="/activities" className="text-gray-600 hover:text-gray-900 transition-colors">
                 Activities
               </Link>
-              <Link href="/auction" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Auction
-              </Link>
-              <Link href="/dashboard/marketplace" className="text-gray-900 font-medium">
+              <Link href="/marketplace" className="text-gray-900 font-medium">
                 Marketplace
               </Link>
             </nav>

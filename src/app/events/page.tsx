@@ -100,10 +100,7 @@ export default function Activities() {
               <Link href="/activities" className="text-gray-900 font-medium">
                 Activities
               </Link>
-              <Link href="/auction" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Auction
-              </Link>
-              <Link href="/dashboard/marketplace" className="text-gray-600 hover:text-gray-900 transition-colors">
+              <Link href="/marketplace" className="text-gray-600 hover:text-gray-900 transition-colors">
                 Marketplace
               </Link>
             </nav>
@@ -304,7 +301,8 @@ export default function Activities() {
         )} 
 
         {/* Upcoming activities */}
-        <section className="mb-12">
+        {upcommingEvents && upcommingEvents.length > 0 && (
+          <section className="mb-12">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Upcoming Activities</h2>
             <Link href="/activities/upcoming" className="text-[#3F3D56] text-sm hover:underline">
@@ -352,6 +350,7 @@ export default function Activities() {
             ))}
           </div>
         </section>
+        )}
 
         {/* Activity calendar */}
         <section className="mb-12">

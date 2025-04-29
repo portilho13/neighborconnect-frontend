@@ -1,8 +1,6 @@
-// userStore.ts
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { StateCreator } from 'zustand';
-import { useEffect, useState } from 'react';
 
 export interface User {
   id: number;
@@ -32,6 +30,40 @@ type UserPersist = (
   config: StateCreator<UserState>,
   options: any
 ) => StateCreator<UserState>;
+
+// TTL duration (1 hour)
+const EXPIRATION_TIME = 60 * 60 * 1000;
+
+const customStorage = {
+  getItem: (name: string) => {
+    const item = localStorage.getItem(name);
+    if (!item) return null;
+
+    try {
+      const data = JSON.parse(item);
+      const now = Date.now();
+
+      if (data.timestamp && now - data.timestamp > EXPIRATION_TIME) {
+        localStorage.removeItem(name);
+        return null;
+      }
+
+      return data.state;
+    } catch {
+      return null;
+    }
+  },
+  setItem: (name: string, value: any) => {
+    const wrapped = {
+      state: value,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(name, JSON.stringify(wrapped));
+  },
+  removeItem: (name: string) => {
+    localStorage.removeItem(name);
+  },
+};
 
 const useUserStore = create<UserState>()(
   (persist as UserPersist)(
@@ -65,7 +97,7 @@ const useUserStore = create<UserState>()(
     }),
     {
       name: 'user-storage',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => customStorage),
     }
   )
 );

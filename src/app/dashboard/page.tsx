@@ -31,6 +31,7 @@ interface Rent {
   final_amount: number;
   apartment_id: number;
   status: string;
+  due_day: number;
 }
 
 const months = [ "January", "February", "March", "April", "May", "June", 
@@ -314,7 +315,7 @@ export default function Dashboard() {
                       style={{ width: `${discountPercentage}%` }}
                     ></div>
                   </div>
-                  <div className="mt-2 text-xs text-gray-400">Due by 1</div>
+                  <div className="mt-2 text-xs text-gray-400">Due by {currentRent.due_day}</div>
                 </div>
                 
                 {/* Payment Status - Added between discount progress and buttons */}
