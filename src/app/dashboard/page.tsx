@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import {
   Search,
@@ -14,12 +14,13 @@ import {
   Calendar,
   ShoppingBag,
   User,
+  Check,
+  AlertCircle,
 } from "lucide-react"
 
 import useUserStore from "../../../lib/userStore"
 
 export default function Dashboard() {
-
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const userName = "Rodrigo Moura"
   const currentDate = new Date()
@@ -27,16 +28,83 @@ export default function Dashboard() {
   const formattedDate = currentDate.toLocaleDateString("pt-PT", options)
   const endDate = "Jan 31"
 
-  // Balance data
-  const totalPoints = 400
-  const usedPoints = 30
-  const currentBalance = totalPoints - usedPoints
-  const percentageRemaining = (currentBalance / totalPoints) * 100
+  // Rent data with discount information
+  const [currentMonthIndex, setCurrentMonthIndex] = useState(0)
+  const rentHistory = [
+    {
+      month: "April 2025",
+      baseAmount: 1200,
+      discount: 100,
+      paid: true,
+      dueDate: "Apr 30",
+      maxDiscount: 200,
+    },
+    {
+      month: "March 2025",
+      baseAmount: 1200,
+      discount: 150,
+      paid: true,
+      dueDate: "Mar 31",
+      maxDiscount: 200,
+    },
+    {
+      month: "February 2025",
+      baseAmount: 1200,
+      discount: 50,
+      paid: true,
+      dueDate: "Feb 28",
+      maxDiscount: 200,
+    },
+    {
+      month: "January 2025",
+      baseAmount: 1200,
+      discount: 0,
+      paid: true,
+      dueDate: "Jan 31",
+      maxDiscount: 200,
+    },
+    {
+      month: "December 2024",
+      baseAmount: 1200,
+      discount: 100,
+      paid: true,
+      dueDate: "Dec 31",
+      maxDiscount: 200,
+    },
+    {
+      month: "November 2024",
+      baseAmount: 1200,
+      discount: 0,
+      paid: false,
+      dueDate: "Nov 30",
+      maxDiscount: 200,
+    },
+  ]
+
+  const currentRent = rentHistory[currentMonthIndex]
+  const finalAmount = currentRent.baseAmount - currentRent.discount
+  const discountPercentage = (currentRent.discount / currentRent.maxDiscount) * 100
+
+  // Update the progress calculation for the circle to show percentage of rent being paid after discount
+  const percentagePaid = (finalAmount / currentRent.baseAmount) * 100;
 
   // Calculate the circle's circumference and offset
-  const radius = 70
-  const circumference = 2 * Math.PI * radius
-  const offset = circumference - (percentageRemaining / 100) * circumference
+  const radius = 70;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (percentagePaid / 100) * circumference;
+
+  // Navigation functions
+  const goToPreviousMonth = () => {
+    if (currentMonthIndex < rentHistory.length - 1) {
+      setCurrentMonthIndex(currentMonthIndex + 1)
+    }
+  }
+
+  const goToNextMonth = () => {
+    if (currentMonthIndex > 0) {
+      setCurrentMonthIndex(currentMonthIndex - 1)
+    }
+  }
 
   // Get greeting based on time of day
   const getGreeting = () => {
@@ -46,7 +114,7 @@ export default function Dashboard() {
     return "Good Evening"
   }
 
-  const user = useUserStore((state) => state.user);
+  const user = useUserStore((state) => state.user)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -140,196 +208,235 @@ export default function Dashboard() {
       </header>
 
       {/* Main content */}
-<main className="container mx-auto px-4 py-8">
-  {/* Greeting section */}
-  <div className="mb-8">
-    <h2 className="text-gray-500 text-sm">{getGreeting()}</h2>
-    <h1 className="text-2xl font-bold text-gray-900">{user?.name}</h1>
-  </div>
-
-  {/* Dashboard grid */}
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-    {/* Balance card */}
-    <div className="bg-white rounded-xl p-6 shadow-md md:col-span-2 border border-gray-100">
-      <div className="flex justify-between items-start mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Your Balance</h2>
-        <div className="flex items-center gap-2">
-          <button className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <button className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
-
-      <div className="flex flex-col md:flex-row items-center justify-between">
-        <div className="relative w-[180px] h-[180px] mb-6 md:mb-0">
-          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
-            {/* Background circle */}
-            <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(209, 213, 219, 0.5)" strokeWidth="12" />
-            {/* Progress circle with gradient */}
-            <circle
-              cx="100"
-              cy="100"
-              r={radius}
-              fill="none"
-              stroke="url(#gradient)"
-              strokeWidth="12"
-              strokeDasharray={circumference}
-              strokeDashoffset={offset}
-              strokeLinecap="round"
-            />
-            {/* Define gradient */}
-            <defs>
-              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#3F3D56" />
-                <stop offset="50%" stopColor="#3F3D56" />
-                <stop offset="100%" stopColor="#6c6a8a" />
-              </linearGradient>
-            </defs>
-          </svg>
-
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-bold text-gray-900">{currentBalance}</span>
-            <div className="flex flex-col items-center">
-              <span className="text-gray-400 text-xs">-{usedPoints}</span>
-              <div className="w-12 h-px bg-gray-200 my-1"></div>
-              <span className="text-sm text-gray-600">{totalPoints}</span>
-            </div>
-            <span className="text-gray-400 text-xs mt-1">points</span>
-          </div>
-
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#3F3D56]/10 text-[#3F3D56] px-3 py-1 rounded-full">
-            <span className="text-sm font-medium">{formattedDate}</span>
-          </div>
+      <main className="container mx-auto px-4 py-8">
+        {/* Greeting section */}
+        <div className="mb-8">
+          <h2 className="text-gray-500 text-sm">{getGreeting()}</h2>
+          <h1 className="text-2xl font-bold text-gray-900">{user?.name}</h1>
         </div>
 
-        <div className="md:w-1/2">
-          <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-100">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-gray-600">Monthly Limit</span>
-              <span className="text-sm font-medium text-gray-900">
-                {currentBalance}/{totalPoints}
-              </span>
+        {/* Dashboard grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Rent card */}
+          <div className="bg-white rounded-xl p-6 shadow-md md:col-span-2 border border-gray-100">
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center">
+                <h2 className="text-xl font-semibold text-gray-900">Your Rent</h2>
+                <span className="text-xl font-semibold ml-2 text-[#3F3D56]">- {currentRent.month}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
+                  onClick={goToPreviousMonth}
+                  disabled={currentMonthIndex >= rentHistory.length - 1}
+                  aria-label="Previous month"
+                >
+                  <ChevronLeft
+                    className={`h-5 w-5 ${currentMonthIndex >= rentHistory.length - 1 ? "opacity-50" : ""}`}
+                  />
+                </button>
+                <button
+                  className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
+                  onClick={goToNextMonth}
+                  disabled={currentMonthIndex <= 0}
+                  aria-label="Next month"
+                >
+                  <ChevronRight className={`h-5 w-5 ${currentMonthIndex <= 0 ? "opacity-50" : ""}`} />
+                </button>
+              </div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-gradient-to-r from-[#3F3D56] to-[#6c6a8a] h-2 rounded-full"
-                style={{ width: `${percentageRemaining}%` }}
-              ></div>
+
+            <div className="flex flex-col md:flex-row items-center justify-between">
+              <div className="relative w-[220px] h-[220px] mb-6 md:mb-0">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
+                  {/* Background circle */}
+                  <circle cx="100" cy="100" r={radius} fill="none" stroke="rgba(209, 213, 219, 0.5)" strokeWidth="12" />
+                  {/* Progress circle with gradient */}
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r={radius}
+                    fill="none"
+                    stroke="url(#gradient)"
+                    strokeWidth="12"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={offset}
+                    strokeLinecap="round"
+                  />
+                  {/* Define gradient */}
+                  <defs>
+                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#3F3D56" />
+                      <stop offset="50%" stopColor="#3F3D56" />
+                      <stop offset="100%" stopColor="#6c6a8a" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <div className="flex flex-col items-center">
+                    <span className="text-xl font-bold text-gray-900">${currentRent.baseAmount}</span>
+                    <div className="flex items-center gap-1 text-red-500">
+                      <span className="text-lg">-${currentRent.discount}</span>
+                    </div>
+                    <div className="w-24 h-px bg-gray-200 my-2"></div>
+                    <span className="text-2xl font-bold text-gray-900">${finalAmount}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="md:w-1/2">
+                <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-100">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-gray-600">Discount Progress</span>
+                    <div className="flex items-center">
+                      <span className="text-sm font-medium text-gray-900">
+                        ${currentRent.discount}/${currentRent.maxDiscount}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-[#3F3D56] to-[#6c6a8a] h-2 rounded-full"
+                      style={{ width: `${discountPercentage}%` }}
+                    ></div>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-400">Due by {currentRent.dueDate}</div>
+                </div>
+                
+                {/* Payment Status - Added between discount progress and buttons */}
+                <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-100">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Payment Status</span>
+                    <div className="flex items-center">
+                      {currentRent.paid ? (
+                        <span className="flex items-center text-green-600 text-sm font-medium">
+                          <Check className="h-4 w-4 mr-1" /> Paid
+                        </span>
+                      ) : (
+                        <span className="flex items-center text-amber-600 text-sm font-medium">
+                          <AlertCircle className="h-4 w-4 mr-1" /> Unpaid
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button className="flex items-center justify-center gap-2 bg-[#3F3D56] hover:bg-[#2d2b40] transition-colors rounded-lg py-3 font-medium text-white">
+                    <Plus className="h-4 w-4" />
+                    View Details
+                  </button>
+                  <button
+                    className={`flex items-center justify-center gap-2 rounded-lg py-3 font-medium ${
+                      currentRent.paid
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
+                    }`}
+                    disabled={currentRent.paid}
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    {currentRent.paid ? "Paid" : "Pay Rent"}
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="mt-2 text-xs text-gray-400 text-right">Until {endDate}</div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-2 bg-[#3F3D56] hover:bg-[#2d2b40] transition-colors rounded-lg py-3 font-medium text-white">
-              <Plus className="h-4 w-4" />
-              Add Code
-            </button>
-            <button className="flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 transition-colors rounded-lg py-3 font-medium text-gray-700 border border-gray-200">
-              <CreditCard className="h-4 w-4" />
-              Pay Rent
-            </button>
+          {/* Quick actions card */}
+          <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900">Quick Actions</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <Link
+                href="/dashboard/events"
+                className="flex flex-col items-center bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg p-4 border border-gray-100"
+              >
+                <div className="w-10 h-10 rounded-full bg-[#3F3D56]/10 flex items-center justify-center mb-2">
+                  <Calendar className="h-5 w-5 text-[#3F3D56]" />
+                </div>
+                <span className="text-sm text-gray-700">Events</span>
+              </Link>
+
+              <Link
+                href="/dashboard/marketplace"
+                className="flex flex-col items-center bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg p-4 border border-gray-100"
+              >
+                <div className="w-10 h-10 rounded-full bg-[#3F3D56]/10 flex items-center justify-center mb-2">
+                  <ShoppingBag className="h-5 w-5 text-[#3F3D56]" />
+                </div>
+                <span className="text-sm text-gray-700">Marketplace</span>
+              </Link>
+
+              <Link
+                href="/dashboard/neighbors"
+                className="flex flex-col items-center bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg p-4 border border-gray-100"
+              >
+                <div className="w-10 h-10 rounded-full bg-[#3F3D56]/10 flex items-center justify-center mb-2">
+                  <User className="h-5 w-5 text-[#3F3D56]" />
+                </div>
+                <span className="text-sm text-gray-700">Neighbors</span>
+              </Link>
+
+              <Link
+                href="/dashboard/apartment"
+                className="flex flex-col items-center bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg p-4 border border-gray-100"
+              >
+                <div className="w-10 h-10 rounded-full bg-[#3F3D56]/10 flex items-center justify-center mb-2">
+                  <HomeIcon className="h-5 w-5 text-[#3F3D56]" />
+                </div>
+                <span className="text-sm text-gray-700">Apartment</span>
+              </Link>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <h3 className="text-sm font-medium mb-3 text-gray-900">Recent Activity</h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3 border border-gray-100">
+                  <div className="w-8 h-8 rounded-full bg-[#3F3D56]/10 flex items-center justify-center">
+                    <Calendar className="h-4 w-4 text-[#3F3D56]" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">Community Meeting</p>
+                    <p className="text-xs text-gray-500">Tomorrow, 7:00 PM</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3 border border-gray-100">
+                  <div className="w-8 h-8 rounded-full bg-[#3F3D56]/10 flex items-center justify-center">
+                    <ShoppingBag className="h-4 w-4 text-[#3F3D56]" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">New Items in Marketplace</p>
+                    <p className="text-xs text-gray-500">3 new items added</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    {/* Quick actions card */}
-    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-      <h2 className="text-xl font-semibold mb-4 text-gray-900">Quick Actions</h2>
-      <div className="grid grid-cols-2 gap-3">
-        <Link
-          href="/dashboard/events"
-          className="flex flex-col items-center bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg p-4 border border-gray-100"
-        >
-          <div className="w-10 h-10 rounded-full bg-[#3F3D56]/10 flex items-center justify-center mb-2">
-            <Calendar className="h-5 w-5 text-[#3F3D56]" />
-          </div>
-          <span className="text-sm text-gray-700">Events</span>
-        </Link>
-
-        <Link
-          href="/dashboard/marketplace"
-          className="flex flex-col items-center bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg p-4 border border-gray-100"
-        >
-          <div className="w-10 h-10 rounded-full bg-[#3F3D56]/10 flex items-center justify-center mb-2">
-            <ShoppingBag className="h-5 w-5 text-[#3F3D56]" />
-          </div>
-          <span className="text-sm text-gray-700">Marketplace</span>
-        </Link>
-
-        <Link
-          href="/dashboard/neighbors"
-          className="flex flex-col items-center bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg p-4 border border-gray-100"
-        >
-          <div className="w-10 h-10 rounded-full bg-[#3F3D56]/10 flex items-center justify-center mb-2">
-            <User className="h-5 w-5 text-[#3F3D56]" />
-          </div>
-          <span className="text-sm text-gray-700">Neighbors</span>
-        </Link>
-
-        <Link
-          href="/dashboard/apartment"
-          className="flex flex-col items-center bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg p-4 border border-gray-100"
-        >
-          <div className="w-10 h-10 rounded-full bg-[#3F3D56]/10 flex items-center justify-center mb-2">
-            <HomeIcon className="h-5 w-5 text-[#3F3D56]" />
-          </div>
-          <span className="text-sm text-gray-700">Apartment</span>
-        </Link>
-      </div>
-
-      <div className="mt-6 pt-4 border-t border-gray-200">
-        <h3 className="text-sm font-medium mb-3 text-gray-900">Recent Activity</h3>
-        <div className="space-y-3">
-          <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3 border border-gray-100">
-            <div className="w-8 h-8 rounded-full bg-[#3F3D56]/10 flex items-center justify-center">
-              <Calendar className="h-4 w-4 text-[#3F3D56]" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900">Community Meeting</p>
-              <p className="text-xs text-gray-500">Tomorrow, 7:00 PM</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3 border border-gray-100">
-            <div className="w-8 h-8 rounded-full bg-[#3F3D56]/10 flex items-center justify-center">
-              <ShoppingBag className="h-4 w-4 text-[#3F3D56]" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900">New Items in Marketplace</p>
-              <p className="text-xs text-gray-500">3 new items added</p>
+        {/* Wallet Section */}
+        <div className="mt-8">
+          <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Wallet</h2>
+            <div className="flex flex-col md:flex-row justify-between gap-6">
+              <div className="flex-1">
+                <p className="text-gray-600 mb-2">Current Balance</p>
+                <h3 className="text-3xl font-bold text-gray-900">100 USD</h3>
+              </div>
+              <div className="flex items-center gap-4">
+                <button className="bg-[#3F3D56] hover:bg-[#2d2b40] text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                  Add Funds
+                </button>
+                <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors">
+                  Withdraw
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  {/* Wallet Section */}
-  <div className="mt-8">
-    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Wallet</h2>
-      <div className="flex flex-col md:flex-row justify-between gap-6">
-        <div className="flex-1">
-          <p className="text-gray-600 mb-2">Current Balance</p>
-          <h3 className="text-3xl font-bold text-gray-900">100 USD</h3>
-        </div>
-        <div className="flex items-center gap-4">
-          <button className="bg-[#3F3D56] hover:bg-[#2d2b40] text-white px-4 py-2 rounded-lg font-medium transition-colors">
-            Add Funds
-          </button>
-          <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors">
-            Withdraw
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div className="mt-8">
+        <div className="mt-8">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-900">Upcoming Events</h2>
             <Link href="/dashboard/events" className="text-[#3F3D56] text-sm hover:underline">
@@ -388,9 +495,8 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-  </div>
-</main>
-
+        </div>
+      </main>
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 py-12 px-4 mt-12">
@@ -486,8 +592,7 @@ export default function Dashboard() {
                 className="bg-gray-100 hover:bg-gray-200 transition-colors rounded-lg px-4 py-2 flex items-center gap-2 text-gray-800 border border-gray-200"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17.5234 12.0371C17.5088 9.45234 19.4547 8.04492 19.5387 7.99219C18.2979 6.14062 16.3793 5.89453 15.7031 5.87695C14.0449 5.70312 12.4395 6.84961 11.5957 6.84961C10.7344 6.84961 9.43359 5.89453 8.02617 5.92969C6.21094 5.96484 4.53516 7.01953 3.62109 8.64258C1.72266 11.9414 3.15234 16.7871 4.98633 19.3301C5.90039 20.5801 6.96094 21.9873 8.34375 21.9258C9.69141 21.8643 10.207 21.0469 11.8301 21.0469C13.4355 21.0469 13.9336 21.9258 15.3516 21.8906C16.8047 21.8643 17.7188 20.6143 18\
-18.7891 19.5234 18.7891C17.7461 18.7891 16.9961 17.7188 15.3516 17.7461C13.9336 17.7734 13.2891 18.6426 11.8301 18.6426C10.3711 18.6426 9.69141 17.7461 8.35938 17.7461C6.76172 17.7461 5.64453 19.4375 5.64453 19.4375L5.60156 19.498C4.64844 17.8555 4.05859 16.0352 4.05859 14.2305C4.05859 11.1758 6.36719 8.86719 9.42188 8.86719C10.5938 8.86719 11.6133 9.44141 12.375 10.1172C13.0898 9.40625 14.0742 8.86719 15.2109 8.86719C17.8594 8.86719 19.6289 11.0273 19.6289 13.9375C19.6289 16.2891 18.1211 18.1016 17.5234 18.8652Z" />
+                  <path d="M17.5234 12.0371C17.5088 9.45234 19.4547 8.04492 19.5387 7.99219C18.2979 6.14062 16.3793 5.89453 15.7031 5.87695C14.0449 5.70312 12.4395 6.84961 11.5957 6.84961C10.7344 6.84961 9.43359 5.89453 8.02617 5.92969C6.21094 5.96484 4.53516 7.01953 3.62109 8.64258C1.72266 11.9414 3.15234 16.7871 4.98633 19.3301C5.90039 20.5801 6.96094 21.9873 8.34375 21.9258C9.69141 21.8643 10.207 21.0469 11.8301 21.0469C13.4355 21.0469 13.9336 21.9258 15.3516 21.8906C16.8047 21.8643 17.7188 20.6143 18.7891 19.5234C19.5234 18.7891 20.1211 17.7188 20.1562 17.6836C20.1211 17.6484 17.5234 16.5938 17.5234 12.0371Z" />
                 </svg>
                 <span className="text-sm font-medium">Download on App Store</span>
               </a>
@@ -506,6 +611,5 @@ export default function Dashboard() {
         </div>
       </footer>
     </div>
-  );
+  )
 }
-

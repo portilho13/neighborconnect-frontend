@@ -207,7 +207,7 @@ export default function Marketplace() {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Categories</h2>
             <Link
-              href="/dashboard/marketplace/categories"
+              href="/marketplace/categories"
               className="text-[#3F3D56] text-sm hover:underline flex items-center"
             >
               See All
@@ -218,7 +218,7 @@ export default function Marketplace() {
             {categories.map((category, index) => (
               <Link
                 key={index}
-                href={`/dashboard/marketplace/category/${category.name.toLowerCase()}`}
+                href={`/marketplace/category/${category.name.toLowerCase()}`}
                 className="group"
               >
                 <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 group-hover:shadow-md group-hover:border-[#3F3D56]/20">

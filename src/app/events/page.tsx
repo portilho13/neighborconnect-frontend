@@ -247,7 +247,8 @@ export default function Activities() {
         )}
 
         {/* Featured activities */}
-        <section className="mb-12">
+        {events && events.length > 0 && (
+          <section className="mb-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Activities</h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {events.map((event) => (
@@ -300,6 +301,7 @@ export default function Activities() {
             ))}
           </div>
         </section>
+        )} 
 
         {/* Upcoming activities */}
         <section className="mb-12">
@@ -475,7 +477,7 @@ export default function Activities() {
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard/marketplace" className="hover:text-white transition-colors">
+                <Link href="/marketplace" className="hover:text-white transition-colors">
                   Shop
                 </Link>
               </li>
