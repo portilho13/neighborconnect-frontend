@@ -4,6 +4,8 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Search, Bell, Menu, Calendar, Users, MapPin, Clock, Filter, ChevronDown } from "lucide-react"
+import useUserStore from "../../../lib/userStore"
+
 
 interface Event {
   id: number;
@@ -24,7 +26,8 @@ export default function Activities() {
   const [filterOpen, setFilterOpen] = useState(false)
   const [events, setEvents] = useState<Event[]>([])
   const [upcommingEvents, setUpcommingEvents] = useState<Event[]>([])
-  const userName = "Rodrigo Moura"
+
+  const user = useUserStore((state) => state.user);
 
   const fetchEvents = async() => {
     try {
@@ -38,23 +41,25 @@ export default function Activities() {
       const data = await res.json()
       setEvents(data)
 
-      const upEventsFilter: Event[] = []
 
-      data.forEach((event: Event) => {
-        const givenDate = new Date(event.date_time)
+    } catch(error) {
+      console.error(error)
+    }
+  }
 
-        const currentDate = new Date()
+  const fetchUpcommingEvents = async(user_id: Number) => {
+    try {
+      const res = await fetch(`http://localhost:1234/api/v1/event?user_id=${String(user_id)}`)
 
-        const timeDifference = givenDate.getTime() - currentDate.getTime()
+      if (!res.ok) {
+        const errorMessage = await res.text();
+        throw new Error(errorMessage || 'Failed to register');
+      }
+      
+      const data = await res.json()
+      setUpcommingEvents(data)
 
-        const oneWeekInMillis = 7 * 24 * 60 * 60 * 1000;
 
-        if (timeDifference < oneWeekInMillis) {
-          upEventsFilter.push(event)
-        }
-      });
-
-      setUpcommingEvents(upEventsFilter)
     } catch(error) {
       console.error(error)
     }
@@ -62,13 +67,11 @@ export default function Activities() {
 
   useEffect(() => {
     fetchEvents()
-  }, [])
+    if (user?.id) {
+      fetchUpcommingEvents(Number(user.id))
+    }
+  }, [user])
  
-
-  // Upcoming activities data
-  const fetchUpcommingEvents = () => {
-
-  }
 
   // Activity categories
   const categories = [
@@ -123,9 +126,9 @@ export default function Activities() {
 
             <div className="hidden md:flex items-center gap-3">
               <div className="h-8 w-8 rounded-full bg-[#3F3D56] flex items-center justify-center text-white">
-                <span className="font-medium text-sm">{userName.charAt(0)}</span>
+                <span className="font-medium text-sm">{user?.name.charAt(0)}</span>
               </div>
-              <span className="text-sm font-medium text-gray-900">{userName}</span>
+              <span className="text-sm font-medium text-gray-900">{user?.name}</span>
             </div>
 
             <button
@@ -142,9 +145,9 @@ export default function Activities() {
           <div className="md:hidden bg-white border-t border-gray-200 py-3 px-4">
             <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-200">
               <div className="h-8 w-8 rounded-full bg-[#3F3D56] flex items-center justify-center text-white">
-                <span className="font-medium text-sm">{userName.charAt(0)}</span>
+                <span className="font-medium text-sm">{user?.name.charAt(0)}</span>
               </div>
-              <span className="text-sm font-medium text-gray-900">{userName}</span>
+              <span className="text-sm font-medium text-gray-900">{user?.name}</span>
             </div>
 
             <div className="relative mb-4">

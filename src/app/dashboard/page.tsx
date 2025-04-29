@@ -24,7 +24,7 @@ export default function Dashboard() {
   const userName = "Rodrigo Moura"
   const currentDate = new Date()
   const options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" }
-  const formattedDate = currentDate.toLocaleDateString("en-US", options)
+  const formattedDate = currentDate.toLocaleDateString("pt-PT", options)
   const endDate = "Jan 31"
 
   // Balance data
@@ -47,7 +47,6 @@ export default function Dashboard() {
   }
 
   const user = useUserStore((state) => state.user);
-
 
   return (
     <div className="min-h-screen bg-gray-50">

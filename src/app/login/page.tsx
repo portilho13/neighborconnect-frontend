@@ -26,6 +26,9 @@ export default function Login() {
 
   const router = useRouter()
 
+  const userI = useUserStore((state) => state.user);
+
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({
@@ -80,7 +83,17 @@ export default function Login() {
           throw new Error(errorMessage || 'Failed to register');
         }
 
-        const user: User = await res.json()
+        const data = await res.json()
+        const user: User  = {
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          apartmentId: data.apartment_id,
+          avatar: data.avatar,
+          role: "user"
+        }
+
         setUser(user)
         router.push("/dashboard")
       }catch(error) {

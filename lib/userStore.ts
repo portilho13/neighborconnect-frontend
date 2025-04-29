@@ -1,24 +1,25 @@
 // userStore.ts
-import { create } from 'zustand'
-import { persist, PersistOptions, createJSONStorage } from 'zustand/middleware'
-import { StateCreator } from 'zustand'
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { StateCreator } from 'zustand';
+import { useEffect, useState } from 'react';
 
-// Define the user interface
 export interface User {
-  id: string;
+  id: number;
   name: string;
   email: string;
+  phone: string;
+  apartmentId: number;
   avatar: string;
   role: string;
 }
 
-// Define the store state interface
 interface UserState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  
+
   // Actions
   setUser: (userData: User | null) => void;
   updateUserProfile: (updates: Partial<User>) => void;
@@ -27,50 +28,46 @@ interface UserState {
   logout: () => void;
 }
 
-// Define persistence configuration
 type UserPersist = (
   config: StateCreator<UserState>,
-  options: PersistOptions<UserState>
+  options: any
 ) => StateCreator<UserState>;
 
-// Create the store with TypeScript
-const useUserStore = create<UserState>(
+const useUserStore = create<UserState>()(
   (persist as UserPersist)(
     (set) => ({
-      // Initial state
       user: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
-      
-      // Actions
-      setUser: (userData) => set({ 
-        user: userData,
-        isAuthenticated: !!userData,
-        error: null
-      }),
-      
-      updateUserProfile: (updates) => set((state) => ({
-        user: state.user ? { ...state.user, ...updates } : null
-      })),
-      
+
+      setUser: (userData) =>
+        set({
+          user: userData,
+          isAuthenticated: !!userData,
+          error: null,
+        }),
+
+      updateUserProfile: (updates) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updates } : null,
+        })),
+
       setLoading: (isLoading) => set({ isLoading }),
-      
       setError: (error) => set({ error }),
-      
-      logout: () => set({ 
-        user: null, 
-        isAuthenticated: false,
-        error: null
-      }),
+
+      logout: () =>
+        set({
+          user: null,
+          isAuthenticated: false,
+          error: null,
+        }),
     }),
     {
-      name: 'user-storage', // Name for the storage
-      storage: typeof window !== 'undefined' 
-        ? createJSONStorage(() => localStorage)
-        : undefined,
+      name: 'user-storage',
+      storage: createJSONStorage(() => localStorage),
     }
   )
-)
+);
 
-export default useUserStore
+export default useUserStore;
