@@ -88,20 +88,26 @@ export default function Dashboard() {
     return <LoadingSpinner loading={true} size="lg" className="absolute left-4" />;
   }
 
-  const currentRent = rents[currentMonthIndex]
+  const currentRent = rents[currentMonthIndex];
+
   if (!currentRent) {
     return <div>Rent information not found for the selected month.</div>;
   }
-  const finalAmount = currentRent.base_amount - currentRent.reduction
-  const discountPercentage = (currentRent.reduction / maxDiscout) * 100 // Change this later
-
-  // Update the progress calculation for the circle to show percentage of rent being paid after discount
-  const percentagePaid = (finalAmount / currentRent.base_amount) * 100;
-
-  // Calculate the circle's circumference and offset
+  
+  // Calculate the discount amount as a percentage of the base amount
+  const discountAmount = (currentRent.base_amount * currentRent.reduction).toFixed(2);
+    
+  // For display purposes
+  const discountPercentage = currentRent.reduction * 100;
+  
+  // Percentage of rent being paid after discount (for circular progress bar)
+  const percentagePaid = (currentRent.final_amount / currentRent.base_amount) * 100;
+  
+  // Circle progress bar setup
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (percentagePaid / 100) * circumference;
+  
 
   // Navigation functions
   const goToPreviousMonth = () => {
@@ -284,10 +290,10 @@ export default function Dashboard() {
                   <div className="flex flex-col items-center">
                     <span className="text-xl font-bold text-gray-900">${currentRent.base_amount}</span>
                     <div className="flex items-center gap-1 text-red-500">
-                      <span className="text-lg">-${currentRent.reduction}</span>
+                      <span className="text-lg">-${discountAmount}</span>
                     </div>
                     <div className="w-24 h-px bg-gray-200 my-2"></div>
-                    <span className="text-2xl font-bold text-gray-900">${finalAmount}</span>
+                    <span className="text-2xl font-bold text-gray-900">${currentRent.final_amount}</span>
                   </div>
                 </div>
               </div>
@@ -298,7 +304,7 @@ export default function Dashboard() {
                     <span className="text-gray-600">Discount Progress</span>
                     <div className="flex items-center">
                       <span className="text-sm font-medium text-gray-900">
-                        ${currentRent.reduction}/${maxDiscout}
+                        ${discountAmount}/${maxDiscout}
                       </span>
                     </div>
                   </div>
