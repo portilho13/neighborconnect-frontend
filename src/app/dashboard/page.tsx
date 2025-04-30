@@ -82,7 +82,7 @@ export default function Dashboard() {
     if (!hasHydrated) return;
 
     if (!isAuthenticated) {
-      router.push("/login");
+      router.push("/login/client");
     } else if (user?.apartmentId) {
       fetchRent(user.apartmentId);
     }

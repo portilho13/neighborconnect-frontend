@@ -461,7 +461,7 @@ export default function Activities() {
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="hover:text-white transition-colors">
+                <Link href="/login/client" className="hover:text-white transition-colors">
                   Login / Register
                 </Link>
               </li>

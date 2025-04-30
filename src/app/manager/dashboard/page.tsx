@@ -33,11 +33,29 @@ interface Apartment {
     rent: number;
     manager_id: number;
 }
+
+interface ListingInfo {
+    id: number;
+    name: string;
+    description: string;
+    buy_now_price: number;
+    start_price: number;
+    current_bid: number;
+    created_at: string;
+    expiration_time: string;
+    status: string;
+    seller_id: number;
+    category_id: number;
+  }
+  
   
 interface ManagerDashboardInfo {
     apartments: Apartment[];
     users: User[];
+    listings: ListingInfo[];
 }
+
+
 
 
 export default function ManagerDashboard() {
@@ -55,7 +73,7 @@ export default function ManagerDashboard() {
         if (!hasHydrated) return;
 
         if (!isAuthenticated) { // Implement also to check if user role is manager
-        router.push("/login");
+        router.push("/login/manager");
         } else if (user?.id) {
             fetchDashboardInfo(user.id)
         }
@@ -83,8 +101,8 @@ export default function ManagerDashboard() {
     const stats = [
         { title: "Total Apartments", value: `${dashboardInfo?.apartments.length}`, change: null, icon: Building },
         { title: "Active Residents", value: `${dashboardInfo?.users.length}`, change: null, icon: Users },
-        { title: "Monthly Revenue", value: "$24,500", change: "+8%", icon: DollarSign },
-        { title: "Marketplace Listings", value: "56", change: "+15%", icon: ShoppingBag },
+        { title: "Monthly Revenue", value: "$24,500", change: null, icon: DollarSign },
+        { title: "Marketplace Listings", value: `${dashboardInfo?.listings.length}`, change: null, icon: ShoppingBag },
     ]
 
     // Mock data for apartments
