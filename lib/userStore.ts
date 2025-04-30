@@ -17,6 +17,7 @@ interface UserState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  hasHydrated: boolean; // <--- NEW
 
   // Actions
   setUser: (userData: User | null) => void;
@@ -24,6 +25,7 @@ interface UserState {
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   logout: () => void;
+  setHasHydrated: (hydrated: boolean) => void; // <--- NEW
 }
 
 type UserPersist = (
@@ -31,8 +33,7 @@ type UserPersist = (
   options: any
 ) => StateCreator<UserState>;
 
-// TTL duration (1 hour)
-const EXPIRATION_TIME = 60 * 60 * 1000;
+const EXPIRATION_TIME = 60 * 60 * 1000; // 1 hour
 
 const customStorage = {
   getItem: (name: string) => {
@@ -67,11 +68,12 @@ const customStorage = {
 
 const useUserStore = create<UserState>()(
   (persist as UserPersist)(
-    (set) => ({
+    (set, get) => ({
       user: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      hasHydrated: false, // <--- default false
 
       setUser: (userData) =>
         set({
@@ -94,10 +96,15 @@ const useUserStore = create<UserState>()(
           isAuthenticated: false,
           error: null,
         }),
+
+      setHasHydrated: (hydrated) => set({ hasHydrated: hydrated }), // <--- setter
     }),
     {
       name: 'user-storage',
       storage: createJSONStorage(() => customStorage),
+      onRehydrateStorage: () => (state: UserState | undefined) => {
+        state?.setHasHydrated(true);
+      },      
     }
   )
 );

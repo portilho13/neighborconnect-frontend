@@ -20,6 +20,7 @@ import {
 
 import useUserStore from "../../../lib/userStore"
 import LoadingSpinner from "../../../components/loading-spinner"
+import { useRouter } from "next/navigation"
 
 
 interface Rent {
@@ -52,7 +53,10 @@ export default function Dashboard() {
   const [rents, setRents] = useState<Rent[]>([])
 
 
-  const user = useUserStore((state) => state.user)
+  const { user, isAuthenticated, hasHydrated } = useUserStore();
+
+  const router = useRouter()
+
 
   const fetchRent = async(apartment_id: Number) => {
     setIsLoading(true)
@@ -75,14 +79,20 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
-    if (user?.apartmentId) {
-      fetchRent(user?.apartmentId)
+    if (!hasHydrated) return;
+
+    if (!isAuthenticated) {
+      router.push("/login");
+    } else if (user?.apartmentId) {
+      fetchRent(user.apartmentId);
     }
-  }, [user])
+  }, [hasHydrated, isAuthenticated, user]);
+
 
 
   // Rent data with discount information
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0)
+
 
 
   if (isLoading) {
