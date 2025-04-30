@@ -6,10 +6,10 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowLeft, Eye, EyeOff } from "lucide-react"
-import LogoImage from '../../../images/ImagemInicial.svg'
+import LogoImage from '../../../../images/ImagemInicial.svg'
 import { useRouter } from "next/navigation"
-import useUserStore from "../../../lib/userStore"
-import { User } from "../../../lib/userStore"
+import useUserStore from "../../../../lib/userStore"
+import { User } from "../../../../lib/userStore"
 
 
 export default function Login() {
