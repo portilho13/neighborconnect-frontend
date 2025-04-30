@@ -23,7 +23,7 @@ import {
   MapPin,
 } from "lucide-react"
 
-import useUserStore from "../../../../lib/userStore"
+import useUserStore, { User } from "../../../../lib/userStore"
 import { useRouter } from "next/navigation"
 
 interface Apartment {
@@ -32,10 +32,11 @@ interface Apartment {
     floor: number;
     rent: number;
     manager_id: number;
-  }
+}
   
 interface ManagerDashboardInfo {
     apartments: Apartment[];
+    users: User[];
 }
 
 
@@ -55,14 +56,14 @@ export default function ManagerDashboard() {
 
         if (!isAuthenticated) { // Implement also to check if user role is manager
         router.push("/login");
+        } else if (user?.id) {
+            fetchDashboardInfo(user.id)
         }
+    }, [hasHydrated, isAuthenticated, user]);
 
-        fetchDashboardInfo()
-    }, [hasHydrated, isAuthenticated]);
-
-    const fetchDashboardInfo = async() => {
+    const fetchDashboardInfo = async(id: Number) => {
         try {
-            const res = await fetch("http://localhost:1234/api/v1/manager/dashboard/info")
+            const res = await fetch(`http://localhost:1234/api/v1/manager/dashboard/info?manager_id=${id}`)
             if (!res.ok) {
                 const errorMessage = await res.text();
                 throw new Error(errorMessage || 'Failed to register');
@@ -81,7 +82,7 @@ export default function ManagerDashboard() {
     // Mock data for the dashboard
     const stats = [
         { title: "Total Apartments", value: `${dashboardInfo?.apartments.length}`, change: null, icon: Building },
-        { title: "Active Residents", value: "98", change: "+5%", icon: Users },
+        { title: "Active Residents", value: `${dashboardInfo?.users.length}`, change: null, icon: Users },
         { title: "Monthly Revenue", value: "$24,500", change: "+8%", icon: DollarSign },
         { title: "Marketplace Listings", value: "56", change: "+15%", icon: ShoppingBag },
     ]
