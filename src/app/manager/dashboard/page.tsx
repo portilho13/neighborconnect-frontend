@@ -46,13 +46,29 @@ interface ListingInfo {
     status: string;
     seller_id: number;
     category_id: number;
+}
+
+interface CommunityEvent {
+    id: number | null;
+    name: string;
+    percentage: number;
+    code: string;
+    capacity: number;
+    date_time: string;
+    manager_id: number;
+    event_image: string;
+    duration: string;
+    local: string;
+    current_ocupation: number;
   }
+  
   
   
 interface ManagerDashboardInfo {
     apartments: Apartment[];
     users: User[];
     listings: ListingInfo[];
+    events: CommunityEvent[];
 }
 
 
@@ -673,8 +689,7 @@ export default function ManagerDashboard() {
                     </div>
                     <div className="p-6">
                         <div className="space-y-4">
-                        {events
-                            .filter((event) => event.status === "Upcoming")
+                        {dashboardInfo?.events
                             .slice(0, 3)
                             .map((event) => (
                             <div key={event.id} className="flex items-start">
@@ -682,12 +697,12 @@ export default function ManagerDashboard() {
                                 <Calendar className="h-5 w-5 text-[#3F3D56]" />
                                 </div>
                                 <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-900">{event.title}</p>
+                                <p className="text-sm font-medium text-gray-900">{event.name}</p>
                                 <p className="text-xs text-gray-500">
-                                    {event.date} • {event.time}
+                                    {event.date_time} • {event.duration}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                    {event.location} • {event.participants} participants
+                                    {event.local} • {event.current_ocupation} / {event.capacity} participants
                                 </p>
                                 </div>
                                 <button
