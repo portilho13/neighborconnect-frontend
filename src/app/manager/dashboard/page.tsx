@@ -26,12 +26,25 @@ import {
 import useUserStore from "../../../../lib/userStore"
 import { useRouter } from "next/navigation"
 
+interface Apartment {
+    id: number;
+    n_bedrooms: number;
+    floor: number;
+    rent: number;
+    manager_id: number;
+  }
+  
+interface ManagerDashboardInfo {
+    apartments: Apartment[];
+}
+
 
 export default function ManagerDashboard() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [activeTab, setActiveTab] = useState("overview")
     const [concludeEventModal, setConcludeEventModal] = useState(false)
     const [selectedEvent, setSelectedEvent] = useState<any>(null)
+    const [dashboardInfo, setDashboardInfo] = useState<ManagerDashboardInfo>()
 
     const router = useRouter()
 
@@ -43,12 +56,31 @@ export default function ManagerDashboard() {
         if (!isAuthenticated) { // Implement also to check if user role is manager
         router.push("/login");
         }
+
+        fetchDashboardInfo()
     }, [hasHydrated, isAuthenticated]);
+
+    const fetchDashboardInfo = async() => {
+        try {
+            const res = await fetch("http://localhost:1234/api/v1/manager/dashboard/info")
+            if (!res.ok) {
+                const errorMessage = await res.text();
+                throw new Error(errorMessage || 'Failed to register');
+              
+            }
+
+            const data: ManagerDashboardInfo = await res.json()
+
+            setDashboardInfo(data)
+        } catch(error) {
+            console.error(error)
+        }
+    }
 
 
     // Mock data for the dashboard
     const stats = [
-        { title: "Total Apartments", value: "124", change: "+12%", icon: Building },
+        { title: "Total Apartments", value: `${dashboardInfo?.apartments.length}`, change: null, icon: Building },
         { title: "Active Residents", value: "98", change: "+5%", icon: Users },
         { title: "Monthly Revenue", value: "$24,500", change: "+8%", icon: DollarSign },
         { title: "Marketplace Listings", value: "56", change: "+15%", icon: ShoppingBag },
@@ -711,19 +743,15 @@ export default function ManagerDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                     <p className="text-sm text-gray-500 mb-1">Total Apartments</p>
-                    <p className="text-2xl font-semibold text-gray-900">124</p>
+                    <p className="text-2xl font-semibold text-gray-900">{dashboardInfo?.apartments.length}</p>
                     </div>
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                     <p className="text-sm text-gray-500 mb-1">Occupied</p>
-                    <p className="text-2xl font-semibold text-gray-900">98</p>
+                    <p className="text-2xl font-semibold text-gray-900">0</p>
                     </div>
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                     <p className="text-sm text-gray-500 mb-1">Vacant</p>
-                    <p className="text-2xl font-semibold text-gray-900">22</p>
-                    </div>
-                    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                    <p className="text-sm text-gray-500 mb-1">Maintenance</p>
-                    <p className="text-2xl font-semibold text-gray-900">4</p>
+                    <p className="text-2xl font-semibold text-gray-900">0</p>
                     </div>
                 </div>
 

@@ -10,6 +10,7 @@ import LoadingSpinner from "../../../components/loading-spinner"
 import LogoImage from "../../../images/ImagemInicial.svg"
 import { useRouter } from "next/navigation"
 
+
 export default function Register() {
   const [currentStep, setCurrentStep] = useState(1)
   const totalSteps = 2
