@@ -10,7 +10,6 @@ import LoadingSpinner from "../../../components/loading-spinner"
 import LogoImage from "../../../images/ImagemInicial.svg"
 import { useRouter } from "next/navigation"
 
-
 export default function Register() {
   const [currentStep, setCurrentStep] = useState(1)
   const totalSteps = 2
@@ -373,7 +372,7 @@ export default function Register() {
             <div className="mt-6 text-center">
               <p className="text-white/80">
                 Already have an account?{" "}
-                <Link href="/login/client" className="text-[#4987FF] hover:underline">
+                <Link href="/login" className="text-[#4987FF] hover:underline">
                   Login
                 </Link>
               </p>

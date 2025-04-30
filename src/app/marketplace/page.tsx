@@ -3,42 +3,35 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Search, Bell, Menu, Heart } from "lucide-react"
+import { Search, Bell, Menu, Heart, Plus } from "lucide-react"
 import useUserStore from "../../../lib/userStore"
 
-
 interface Listing {
-    id: number;
-    name: string;
-    description: string;
-    buy_now_price: number;
-    startPrice: number;
-    current_bid: number
-    createdAt: Date;
-    expirationTime: Date;
-    status: string;
-    sellerId: number;
-};
-
-
-interface Category {
-    id: number,
-    name: string,
-    url: string
+  id: number
+  name: string
+  description: string
+  buy_now_price: number
+  startPrice: number
+  current_bid: number
+  createdAt: Date
+  expirationTime: Date
+  status: string
+  sellerId: number
 }
 
-
-
-  
+interface Category {
+  id: number
+  name: string
+  url: string
+}
 
 export default function Marketplace() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [listings, setListings] = useState<Listing[]>([]);  
-  const [myAuctions, setMyAuctions] = useState<Listing[]>([]);
-  const user = useUserStore((state) => state.user);
+  const [listings, setListings] = useState<Listing[]>([])
+  const [myAuctions, setMyAuctions] = useState<Listing[]>([])
+  const user = useUserStore((state) => state.user)
 
-
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>([])
 
   // Trending auctions data
   const trendingAuctions = [
@@ -68,40 +61,36 @@ export default function Marketplace() {
     },
   ]
 
-
-  const fetchListings = async() => {
+  const fetchListings = async () => {
     try {
-        const res = await fetch("http://localhost:1234/api/v1/listing/all")
-        if (!res.ok) {
-            const errorMessage = await res.text();
-            throw new Error(errorMessage || 'Failed to register');
-        }
+      const res = await fetch("http://localhost:1234/api/v1/listing/all")
+      if (!res.ok) {
+        const errorMessage = await res.text()
+        throw new Error(errorMessage || "Failed to register")
+      }
 
-        setListings(await res.json())
-
-    } catch(error) {
-        console.error(error)
+      setListings(await res.json())
+    } catch (error) {
+      console.error(error)
     }
   }
 
-  const fetchCategories = async() => {
+  const fetchCategories = async () => {
     try {
-        const res = await fetch("http://localhost:1234/api/v1/category")
-        if (!res.ok) {
-            const errorMessage = await res.text();
-            throw new Error(errorMessage || 'Failed to register');
-        }
+      const res = await fetch("http://localhost:1234/api/v1/category")
+      if (!res.ok) {
+        const errorMessage = await res.text()
+        throw new Error(errorMessage || "Failed to register")
+      }
 
-        setCategories(await res.json())
-
-    } catch(error) {
-        console.error(error)
+      setCategories(await res.json())
+    } catch (error) {
+      console.error(error)
     }
   }
 
   useEffect(() => {
-    fetchListings(),
-    fetchCategories()
+    fetchListings(), fetchCategories()
   }, [])
 
   return (
@@ -187,7 +176,7 @@ export default function Marketplace() {
               <Link href="/auction" className="text-gray-600 hover:text-gray-900 transition-colors">
                 Auction
               </Link>
-              <Link href="/dashboard/marketplace" className="text-gray-900 font-medium">
+              <Link href="/dashboard/marketplace" className="text-gray-600 hover:text-gray-900 transition-colors">
                 Marketplace
               </Link>
             </nav>
@@ -197,146 +186,151 @@ export default function Marketplace() {
 
       {/* Main content */}
       <main className="container mx-auto px-4 py-8">
-        {categories && categories.length > 0 && (
-          <>       
-           {/* Categories section */}
-        <div className="mb-12">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Categories</h2>
-            <Link
-              href="/marketplace/categories"
-              className="text-[#3F3D56] text-sm hover:underline flex items-center"
-            >
-              See All
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {categories.map((category, index) => (
-              <Link
-                key={index}
-                href={`/marketplace/category/${category.name.toLowerCase()}`}
-                className="group"
-              >
-                <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 group-hover:shadow-md group-hover:border-[#3F3D56]/20">
-                  <div className="relative h-40 w-full">
-                    <Image
-                      src={category.url || "/placeholder.svg"}
-                      alt={category.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="p-3 text-center">
-                    <h3 className="font-medium text-gray-900">{category.name}</h3>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+        {/* Create Listing Button */}
+        <div className="mb-8 flex justify-end">
+          <Link
+            href="/marketplace/create-listing"
+            className="flex items-center gap-2 bg-[#3F3D56] hover:bg-[#2d2b40] text-white px-4 py-2 rounded-md transition-colors"
+          >
+            <Plus className="h-5 w-5" />
+            <span>Create Listing</span>
+          </Link>
         </div>
+
+        {categories && categories.length > 0 && (
+          <>
+            {/* Categories section */}
+            <div className="mb-12">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Categories</h2>
+                <Link
+                  href="/marketplace/categories"
+                  className="text-[#3F3D56] text-sm hover:underline flex items-center"
+                >
+                  See All
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {categories.map((category, index) => (
+                  <Link key={index} href={`/marketplace/category/${category.name.toLowerCase()}`} className="group">
+                    <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 group-hover:shadow-md group-hover:border-[#3F3D56]/20">
+                      <div className="relative h-40 w-full">
+                        <Image
+                          src={category.url || "/placeholder.svg"}
+                          alt={category.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="p-3 text-center">
+                        <h3 className="font-medium text-gray-900">{category.name}</h3>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
           </>
         )}
 
         {listings && listings.length > 0 && (
-        <>
+          <>
             {/* Trending Auction section */}
             <div className="mb-12">
-            <div className="flex justify-between items-center mb-6">
+              <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Trending Auction</h2>
                 <Link
-                href="/dashboard/marketplace/trending"
-                className="text-[#3F3D56] text-sm hover:underline flex items-center"
+                  href="/dashboard/marketplace/trending"
+                  className="text-[#3F3D56] text-sm hover:underline flex items-center"
                 >
-                See All
+                  See All
                 </Link>
-            </div>
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {listings.map((auction, index) => (
-                <div
+                  <div
                     key={index}
                     className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md hover:border-[#3F3D56]/20"
-                >
+                  >
                     <div className="relative h-48 w-full">
-                    <Image src="/placeholder.svg" alt={auction.name} fill className="object-cover" />
-                    <button className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1.5 rounded-full hover:bg-white transition-colors">
+                      <Image src="/placeholder.svg" alt={auction.name} fill className="object-cover" />
+                      <button className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1.5 rounded-full hover:bg-white transition-colors">
                         <Heart className="h-4 w-4 text-gray-600" />
-                    </button>
+                      </button>
                     </div>
                     <div className="p-4">
-                    <h3 className="font-medium text-gray-900 mb-2">{auction.name}</h3>
-                    <div className="flex flex-col gap-1 mb-3">
+                      <h3 className="font-medium text-gray-900 mb-2">{auction.name}</h3>
+                      <div className="flex flex-col gap-1 mb-3">
                         <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Current Bid</span>
-                        <span className="font-medium text-gray-900">${auction.current_bid}</span>
+                          <span className="text-gray-600">Current Bid</span>
+                          <span className="font-medium text-gray-900">${auction.current_bid}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Buy Now Price</span>
-                        <span className="font-medium text-gray-900">${auction.buy_now_price}</span>
+                          <span className="text-gray-600">Buy Now Price</span>
+                          <span className="font-medium text-gray-900">${auction.buy_now_price}</span>
                         </div>
-                    </div>
-                    <button className="w-full bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors">
+                      </div>
+                      <button className="w-full bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors">
                         See more
-                    </button>
+                      </button>
                     </div>
-                </div>
+                  </div>
                 ))}
+              </div>
             </div>
-            </div>
-        </>
+          </>
         )}
-
 
         {myAuctions && myAuctions.length > 0 && (
-        <>
+          <>
             {/* My Auctions section */}
             <div className="mb-12">
-            <div className="flex justify-between items-center mb-6">
+              <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">My Auctions</h2>
                 <Link
-                href="/dashboard/marketplace/my-auctions"
-                className="text-[#3F3D56] text-sm hover:underline flex items-center"
+                  href="/dashboard/marketplace/my-auctions"
+                  className="text-[#3F3D56] text-sm hover:underline flex items-center"
                 >
-                See All
+                  See All
                 </Link>
-            </div>
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {myAuctions.map((auction, index) => (
-                <div
+                  <div
                     key={index}
                     className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md hover:border-[#3F3D56]/20"
-                >
+                  >
                     <div className="relative h-48 w-full">
-                    <Image src="/placeholder.svg" alt={auction.name} fill className="object-cover" />
-                    <button className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1.5 rounded-full hover:bg-white transition-colors">
+                      <Image src="/placeholder.svg" alt={auction.name} fill className="object-cover" />
+                      <button className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1.5 rounded-full hover:bg-white transition-colors">
                         <Heart className="h-4 w-4 text-gray-600" />
-                    </button>
+                      </button>
                     </div>
                     <div className="p-4">
-                    <h3 className="font-medium text-gray-900 mb-2">{auction.name}</h3>
-                    <div className="flex flex-col gap-1 mb-3">
+                      <h3 className="font-medium text-gray-900 mb-2">{auction.name}</h3>
+                      <div className="flex flex-col gap-1 mb-3">
                         <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Current Bid</span>
-                        <span className="font-medium text-gray-900">${auction.current_bid}</span>
+                          <span className="text-gray-600">Current Bid</span>
+                          <span className="font-medium text-gray-900">${auction.current_bid}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Buy Now Price</span>
-                        <span className="font-medium text-gray-900">${auction.buy_now_price}</span>
+                          <span className="text-gray-600">Buy Now Price</span>
+                          <span className="font-medium text-gray-900">${auction.buy_now_price}</span>
                         </div>
-                    </div>
-                    <button className="w-full bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors">
+                      </div>
+                      <button className="w-full bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors">
                         See more
-                    </button>
+                      </button>
                     </div>
-                </div>
+                  </div>
                 ))}
+              </div>
             </div>
-            </div>
-        </>
+          </>
         )}
-
       </main>
 
       {/* Footer */}
