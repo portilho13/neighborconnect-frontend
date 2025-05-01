@@ -91,7 +91,7 @@ export default function Login() {
           phone: data.phone,
           apartmentId: data.apartment_id,
           avatar: data.avatar,
-          role: "user"
+          role: "client"
         }
 
         setUser(user)
