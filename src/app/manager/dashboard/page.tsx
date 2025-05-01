@@ -32,6 +32,7 @@ interface Apartment {
     floor: number;
     rent: number;
     manager_id: number;
+    status: string;
 }
 
 interface ListingInfo {
@@ -779,11 +780,15 @@ export default function ManagerDashboard() {
                     </div>
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                     <p className="text-sm text-gray-500 mb-1">Occupied</p>
-                    <p className="text-2xl font-semibold text-gray-900">0</p>
+                    <p className="text-2xl font-semibold text-gray-900">
+                        {dashboardInfo?.apartments.filter((apartment: Apartment) => apartment.status === "occupied").length ?? 0}
+                    </p>
                     </div>
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                     <p className="text-sm text-gray-500 mb-1">Vacant</p>
-                    <p className="text-2xl font-semibold text-gray-900">0</p>
+                    <p className="text-2xl font-semibold text-gray-900">
+                        {dashboardInfo?.apartments.filter((apartment: Apartment) => apartment.status === "unoccupied").length ?? 0}
+                    </p>
                     </div>
                 </div>
 
