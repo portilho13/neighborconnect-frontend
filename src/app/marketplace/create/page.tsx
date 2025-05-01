@@ -239,7 +239,7 @@ export default function CreateListing() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (images.length < 4) {
+    if (images.length < 1) {
       alert("Please upload at least 4 images")
       return
     }
@@ -268,6 +268,8 @@ export default function CreateListing() {
         // and get back URLs to store in the database
         images: images,
       }
+
+      console.log(formData)
 
       // Example API call (replace with your actual endpoint)
       // const response = await fetch("http://localhost:1234/api/v1/listing/create", {
@@ -479,7 +481,7 @@ export default function CreateListing() {
                     </button>
                   )}
                 </div>
-                {images.length < 4 && <p className="text-sm text-red-500 mt-2">Please upload at least 4 images</p>}
+                {images.length < 1 && <p className="text-sm text-red-500 mt-2">Please upload at least 4 images</p>}
               </div>
 
               {/* Submit Button */}
