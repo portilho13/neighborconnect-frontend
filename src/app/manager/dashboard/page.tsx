@@ -116,10 +116,11 @@ export default function ManagerDashboard() {
     // Mock data for the dashboard
     const stats = [
         { title: "Total Apartments", value: `${dashboardInfo?.apartments.length}`, change: null, icon: Building },
-        { title: "Active Residents", value: `${dashboardInfo?.users.length}`, change: null, icon: Users },
+        { title: "Active Residents", value: dashboardInfo?.users ? dashboardInfo?.users.length: 0, change: null, icon: Users },
         { title: "Monthly Revenue", value: "$24,500", change: null, icon: DollarSign },
-        { title: "Marketplace Listings", value: `${dashboardInfo?.listings.length}`, change: null, icon: ShoppingBag },
+        { title: "Marketplace Listings", value: dashboardInfo?.listings ? dashboardInfo?.listings.length : 0, change: null, icon: ShoppingBag },
     ]
+
 
     // Mock data for apartments
     const apartments = [
@@ -656,13 +657,6 @@ export default function ManagerDashboard() {
                             </span>
                             <PlusCircle className="h-5 w-5 text-[#3F3D56]" />
                         </button>
-                        <button className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
-                            <span className="flex items-center">
-                            <Users className="h-5 w-5 mr-2 text-[#3F3D56]" />
-                            View Resident Requests
-                            </span>
-                            <span className="bg-[#3F3D56] text-white text-xs font-medium px-2 py-1 rounded-full">3</span>
-                        </button>
                         <button
                             onClick={() => setActiveTab("finances")}
                             className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm font-medium text-gray-700"
@@ -687,6 +681,7 @@ export default function ManagerDashboard() {
                         View All
                         </button>
                     </div>
+                    {dashboardInfo?.events && dashboardInfo.events.length > 0 && (
                     <div className="p-6">
                         <div className="space-y-4">
                         {dashboardInfo?.events
@@ -715,6 +710,7 @@ export default function ManagerDashboard() {
                             ))}
                         </div>
                     </div>
+                    )}
                     </div>
 
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -727,7 +723,8 @@ export default function ManagerDashboard() {
                         View All
                         </button>
                     </div>
-                    <div className="p-6">
+                    {dashboardInfo?.listings && dashboardInfo.listings.length > 0 && (
+                        <div className="p-6">
                         <div className="space-y-4">
                         {marketplaceListings
                             .filter((listing) => listing.status === "Active")
@@ -754,6 +751,7 @@ export default function ManagerDashboard() {
                             ))}
                         </div>
                     </div>
+                    )}
                     </div>
                 </div>
                 </div>
