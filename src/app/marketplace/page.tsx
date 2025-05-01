@@ -189,7 +189,7 @@ export default function Marketplace() {
         {/* Create Listing Button */}
         <div className="mb-8 flex justify-end">
           <Link
-            href="/marketplace/create-listing"
+            href="/marketplace/create"
             className="flex items-center gap-2 bg-[#3F3D56] hover:bg-[#2d2b40] text-white px-4 py-2 rounded-md transition-colors"
           >
             <Plus className="h-5 w-5" />
