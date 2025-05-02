@@ -6,6 +6,11 @@ import Image from "next/image"
 import { Search, Bell, Menu, Heart, Plus } from "lucide-react"
 import useUserStore from "../../../lib/userStore"
 
+interface Listing_Photo {
+  id: number;
+  url: string;
+}
+
 interface Listing {
   id: number
   name: string
@@ -17,7 +22,9 @@ interface Listing {
   expirationTime: Date
   status: string
   sellerId: number
+  listing_photos: Listing_Photo[]
 }
+
 
 interface Category {
   id: number
@@ -255,7 +262,7 @@ export default function Marketplace() {
                     className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md hover:border-[#3F3D56]/20"
                   >
                     <div className="relative h-48 w-full">
-                      <Image src="/placeholder.svg" alt={auction.name} fill className="object-cover" />
+                      <Image src={auction.listing_photos[0].url || "/placeholder.svg"} alt={auction.name} fill className="object-cover" />
                       <button className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1.5 rounded-full hover:bg-white transition-colors">
                         <Heart className="h-4 w-4 text-gray-600" />
                       </button>
