@@ -15,6 +15,8 @@ import * as PopoverPrimitive from "@radix-ui/react-popover"
 import * as ToastPrimitive from "@radix-ui/react-toast"
 import { cva } from "class-variance-authority"
 import { cn } from "../../../../lib/utils"
+import useUserStore from "../../../../lib/userStore"
+
 
 // Toast components
 const ToastProvider = ToastPrimitive.Provider
@@ -334,6 +336,8 @@ export default function CreateListing() {
   const [previews, setPreviews] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const { user, isAuthenticated, hasHydrated } = useUserStore();
+
   const [categories] = useState([
     { id: 1, name: "Electronics" },
     { id: 2, name: "Clothing" },
@@ -354,7 +358,7 @@ export default function CreateListing() {
     if (endDate) delete newErrors.endDate
     if (images.length >= 4) delete newErrors.images
     setErrors(newErrors)
-  }, [name, description, startPrice, buyNowPrice, category, endDate, images])
+  }, [user, name, description, startPrice, buyNowPrice, category, endDate, images])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -381,7 +385,7 @@ export default function CreateListing() {
     if (!buyNowPrice) newErrors.buyNowPrice = "Buy now price is required"
     if (!category) newErrors.category = "Category is required"
     if (!endDate) newErrors.endDate = "End date is required"
-    if (images.length < 4) newErrors.images = "Please upload at least 4 images"
+    if (images.length < 1) newErrors.images = "Please upload at least 4 images"
 
     if (Number(startPrice) <= 0) newErrors.startPrice = "Starting price must be greater than 0"
     if (Number(buyNowPrice) <= 0) newErrors.buyNowPrice = "Buy now price must be greater than 0"
@@ -415,10 +419,11 @@ export default function CreateListing() {
       const listingData = {
         name,
         description,
-        startPrice: parseFloat(startPrice),
-        buy_now_price: parseFloat(buyNowPrice),
-        category,
-        expirationTime: combinedEndDateTime?.toISOString(),
+        buy_now_price: parseFloat(buyNowPrice).toString(),
+        start_price: parseFloat(startPrice).toString(),
+        expiration_date: combinedEndDateTime?.toISOString(),
+        seller_id: user?.id.toString(),
+        category_id: null,
       }
   
       const formData = new FormData()
@@ -462,7 +467,7 @@ export default function CreateListing() {
   
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-8 text-black">
       <ToastProvider>
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">

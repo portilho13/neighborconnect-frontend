@@ -5,6 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Search, Bell, Menu, Heart, Plus } from "lucide-react"
 import useUserStore from "../../../lib/userStore"
+import { useRouter } from "next/navigation"
 
 interface Listing_Photo {
   id: number;
@@ -19,9 +20,10 @@ interface Listing {
   startPrice: number
   current_bid: number
   createdAt: Date
-  expirationTime: Date
+  expiration_date: Date
   status: string
   sellerId: number
+  category_id: Category[]
   listing_photos: Listing_Photo[]
 }
 
@@ -33,6 +35,13 @@ interface Category {
 }
 
 export default function Marketplace() {
+
+  const router = useRouter()
+
+  const handleMarketListingRedirect = (listing_id: number) => {
+    router.push(`http://localhost:3000/marketplace/${listing_id}`)
+  }
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [listings, setListings] = useState<Listing[]>([])
   const [myAuctions, setMyAuctions] = useState<Listing[]>([])
@@ -76,7 +85,20 @@ export default function Marketplace() {
         throw new Error(errorMessage || "Failed to register")
       }
 
-      setListings(await res.json())
+      const data: Listing[] = await res.json()
+
+      setListings(data)
+
+      const myAuctionsArr: Listing[] = []
+
+      data.forEach((listing: Listing) => {
+        console.log(listing.id)
+        if (user?.id == listing.sellerId) {
+          myAuctionsArr.push(listing)
+        }
+      })
+
+      setMyAuctions(myAuctionsArr)
     } catch (error) {
       console.error(error)
     }
@@ -260,6 +282,7 @@ export default function Marketplace() {
                   <div
                     key={index}
                     className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md hover:border-[#3F3D56]/20"
+                    onClick={() => handleMarketListingRedirect(auction.id)}
                   >
                     <div className="relative h-48 w-full">
                       <Image src={auction.listing_photos[0].url || "/placeholder.svg"} alt={auction.name} fill className="object-cover" />
@@ -309,9 +332,10 @@ export default function Marketplace() {
                   <div
                     key={index}
                     className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md hover:border-[#3F3D56]/20"
+                    onClick={() => handleMarketListingRedirect(auction.id)}
                   >
                     <div className="relative h-48 w-full">
-                      <Image src="/placeholder.svg" alt={auction.name} fill className="object-cover" />
+                      <Image src={auction.listing_photos[0].url || "/placeholder.svg"} alt={auction.name} fill className="object-cover" />
                       <button className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1.5 rounded-full hover:bg-white transition-colors">
                         <Heart className="h-4 w-4 text-gray-600" />
                       </button>

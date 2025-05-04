@@ -6,28 +6,33 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Heart, Clock, Share2, ChevronLeft, ChevronRight, Bell, Menu } from "lucide-react"
+import { ArrowLeft, Heart, Clock, Share2, Bell, Menu, ChevronUp, ChevronDown } from "lucide-react"
 import useUserStore from "../lib/userStore"
 
+interface Listing_Photo {
+  id: number
+  url: string
+}
 
 interface Listing {
   id: number
   name: string
   description: string
   buy_now_price: number
-  startPrice: number
+  start_price: number
   current_bid: number
-  createdAt: Date
-  expirationTime: Date
+  created_at: Date
+  expiration_date: Date
   status: string
   sellerId: number
-  images: string[]
-  seller: {
-    id: number
-    name: string
-    rating: number
-  }
-  category: string
+  category_id: Category[]
+  listing_photos: Listing_Photo[]
+}
+
+interface Category {
+  id: number
+  name: string
+  url: string
 }
 
 interface RelatedListing {
@@ -38,15 +43,48 @@ interface RelatedListing {
   buy_now_price: number
 }
 
-export default function ListingDetail({ params }: { params: { id: string } }) {
+interface ListingDetailProps {
+  id: string
+}
+
+export default function ListingDetail({ id }: ListingDetailProps) {
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [listing, setListing] = useState<Listing | null>(null)
+  const [listing, setListing] = useState<Listing>()
   const [isLoading, setIsLoading] = useState(true)
   const [bidAmount, setBidAmount] = useState("")
   const [timeLeft, setTimeLeft] = useState("")
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [imageError, setImageError] = useState(false)
+
   const user = useUserStore((state) => state.user)
+
+  // Get current image URL
+  const currentImageUrl =
+    listing?.listing_photos && listing.listing_photos.length > 0 && currentImageIndex < listing.listing_photos.length
+      ? listing.listing_photos[currentImageIndex].url
+      : "/placeholder.svg?height=400&width=400"
+
+  // Navigation functions
+  const nextImage = () => {
+    if (listing?.listing_photos && listing.listing_photos.length > 0) {
+      setCurrentImageIndex((prev) => (prev === listing.listing_photos.length - 1 ? 0 : prev + 1))
+      console.log(
+        "Next image clicked, new index:",
+        currentImageIndex === listing.listing_photos.length - 1 ? 0 : currentImageIndex + 1,
+      )
+    }
+  }
+
+  const prevImage = () => {
+    if (listing?.listing_photos && listing.listing_photos.length > 0) {
+      setCurrentImageIndex((prev) => (prev === 0 ? listing.listing_photos.length - 1 : prev - 1))
+      console.log(
+        "Previous image clicked, new index:",
+        currentImageIndex === 0 ? listing.listing_photos.length - 1 : currentImageIndex - 1,
+      )
+    }
+  }
 
   // Sample related listings
   const relatedListings: RelatedListing[] = [
@@ -80,37 +118,33 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
     },
   ]
 
-  // Mock listing data (in a real app, you would fetch this from an API)
-  useEffect(() => {
-    // Simulate API fetch
-    setTimeout(() => {
-      setListing({
-        id: Number.parseInt(params.id),
-        name: "Vintage Leather Jacket",
-        description: "This is a beautiful vintage leather jacket in excellent condition. Made from genuine leather with a classic design that never goes out of style. Features multiple pockets, adjustable waist straps, and a comfortable lining. Perfect for casual wear or special occasions.",
-        buy_now_price: 250,
-        startPrice: 150,
-        current_bid: 180,
-        createdAt: new Date("2023-04-15"),
-        expirationTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-        status: "active",
-        sellerId: 123,
-        images: [
-          "/placeholder.svg?height=600&width=600",
-          "/placeholder.svg?height=600&width=600",
-          "/placeholder.svg?height=600&width=600",
-          "/placeholder.svg?height=600&width=600",
-        ],
-        seller: {
-          id: 123,
-          name: "John Smith",
-          rating: 4.8,
-        },
-        category: "Clothing",
-      })
+  const fetchListing = async (id: number) => {
+    setIsLoading(true)
+    try {
+      const res = await fetch(`http://localhost:1234/api/v1/listing?id=${id}`)
+      if (!res.ok) {
+        const errorMessage = await res.text()
+        throw new Error(errorMessage || "Failed to fetch")
+      }
+
+      const data: Listing = await res.json()
+      console.log("Fetched listing data:", data)
+      console.log("Listing photos:", data.listing_photos)
+
+      setListing(data)
+      setCurrentImageIndex(0) // Reset to first image when new listing is loaded
+      setImageError(false)
+    } catch (error) {
+      console.error("Error fetching listing:", error)
+    } finally {
       setIsLoading(false)
-    }, 1000)
-  }, [params.id])
+    }
+  }
+
+  // Fetch listing data
+  useEffect(() => {
+    fetchListing(Number(id))
+  }, [id])
 
   // Calculate time left until expiration
   useEffect(() => {
@@ -118,43 +152,36 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
 
     const calculateTimeLeft = () => {
       const now = new Date()
-      const difference = listing.expirationTime.getTime() - now.getTime()
-      
+      const expiration = new Date(listing.expiration_date)
+      const difference = expiration.getTime() - now.getTime()
+
       if (difference <= 0) {
         setTimeLeft("Auction ended")
         return
       }
-      
+
       const days = Math.floor(difference / (1000 * 60 * 60 * 24))
       const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
-      
+
       setTimeLeft(`${days}d ${hours}h ${minutes}m`)
     }
 
     calculateTimeLeft()
     const timer = setInterval(calculateTimeLeft, 60000) // Update every minute
-    
+
     return () => clearInterval(timer)
   }, [listing])
-
-  const handlePrevImage = () => {
-    setCurrentImageIndex((prev) => (prev === 0 ? listing!.images.length - 1 : prev - 1))
-  }
-
-  const handleNextImage = () => {
-    setCurrentImageIndex((prev) => (prev === listing!.images.length - 1 ? 0 : prev + 1))
-  }
 
   const handleBid = (e: React.FormEvent) => {
     e.preventDefault()
     const amount = Number.parseFloat(bidAmount)
-    
+
     if (isNaN(amount) || amount <= (listing?.current_bid || 0)) {
       alert("Please enter a bid higher than the current bid")
       return
     }
-    
+
     // Here you would normally send the bid to your API
     alert(`Bid of $${amount} placed successfully!`)
     // Update the current bid in the UI
@@ -173,6 +200,36 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
     // Redirect to checkout or confirmation page
     // router.push("/checkout")
   }
+
+  const handleImageError = () => {
+    console.error("Image failed to load")
+    setImageError(true)
+  }
+
+  const scrollToImage = (direction: 'next' | 'prev') => {
+    if (!listing?.listing_photos || listing.listing_photos.length <= 1) return;
+    
+    const currentElement = document.querySelector('.image-container:focus-within') || 
+                          document.getElementById(`image-${currentImageIndex}`);
+    
+    if (currentElement) {
+      const allImages = Array.from(document.querySelectorAll('.image-container'));
+      const currentIndex = allImages.indexOf(currentElement as HTMLElement);
+      
+      let targetIndex;
+      if (direction === 'next') {
+        targetIndex = currentIndex < allImages.length - 1 ? currentIndex + 1 : 0;
+      } else {
+        targetIndex = currentIndex > 0 ? currentIndex - 1 : allImages.length - 1;
+      }
+      
+      const targetElement = allImages[targetIndex];
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setCurrentImageIndex(targetIndex);
+      }
+    }
+  };
 
   if (isLoading) {
     return (
@@ -202,6 +259,11 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
       </div>
     )
   }
+
+  // Debug info
+  console.log("Current image index:", currentImageIndex)
+  console.log("Current image URL:", currentImageUrl)
+  console.log("Total images:", listing.listing_photos?.length || 0)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -292,71 +354,88 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
         {/* Listing Detail */}
         <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4 md:p-6 mb-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Image Gallery Carousel */}
-            <div>
-              <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 mb-4">
-                <Image
-                  src={listing.images[currentImageIndex] || "/placeholder.svg"}
-                  alt={listing.name}
-                  fill
-                  className="object-cover"
-                />
-                <button
-                  onClick={handlePrevImage}
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm p-2 rounded-full hover:bg-white transition-colors"
-                >
-                  <ChevronLeft className="h-5 w-5 text-gray-600" />
-                </button>
-                <button
-                  onClick={handleNextImage}
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm p-2 rounded-full hover:bg-white transition-colors"
-                >
-                  <ChevronRight className="h-5 w-5 text-gray-600" />
-                </button>
-                <button className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1.5 rounded-full hover:bg-white transition-colors">
-                  <Heart className="h-4 w-4 text-gray-600" />
-                </button>
-                
-                {/* Image indicator dots */}
-                <div className="absolute bottom-3 left-0 right-0 flex justify-center space-x-2">
-                  {listing.images.map((_, index) => (
+            {/* Simple Image Carousel */}
+            <div className="order-2 lg:order-1">
+              {/* Thumbnails at the top for quick navigation */}
+              {listing.listing_photos && listing.listing_photos.length > 1 && (
+                <div className="mb-4 flex gap-2 overflow-x-auto pb-2">
+                  {listing.listing_photos.map((photo, index) => (
                     <button
-                      key={index}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`w-2 h-2 rounded-full ${
-                        index === currentImageIndex ? "bg-white" : "bg-white/50"
-                      }`}
-                      aria-label={`Go to image ${index + 1}`}
-                    />
+                      key={photo.id}
+                      onClick={() => {
+                        document.getElementById(`image-${index}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }}
+                      className="relative min-w-[60px] w-[60px] h-[60px] rounded-md overflow-hidden border-2 border-gray-200 hover:border-[#3F3D56] transition-colors"
+                    >
+                      <img
+                        src={photo.url || "/placeholder.svg?height=60&width=60"}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = "/placeholder.svg?height=60&width=60"
+                        }}
+                      />
+                    </button>
                   ))}
                 </div>
-              </div>
-              
-              {/* Thumbnail strip */}
-              <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
-                {listing.images.map((image, index) => (
-                  <button
-                    key={index}
-                    className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border ${
-                      index === currentImageIndex ? "border-[#3F3D56]" : "border-gray-200"
-                    }`}
-                    onClick={() => setCurrentImageIndex(index)}
-                  >
-                    <div className="relative w-full h-full">
-                      <Image 
-                        src={image || "/placeholder.svg"} 
-                        alt={`${listing.name} thumbnail ${index + 1}`} 
-                        fill 
-                        className="object-cover" 
-                      />
+              )}
+
+              {/* Vertical stack of all images with navigation arrows */}
+              <div className="relative">
+                <div className="space-y-6 overflow-y-auto max-h-[800px] pr-2 scrollbar-thin scrollbar-track-gray-100 pb-12">
+                  {listing.listing_photos && listing.listing_photos.length > 0 ? (
+                    listing.listing_photos.map((photo, index) => (
+                      <div 
+                        key={photo.id} 
+                        id={`image-${index}`}
+                        className="image-container w-full rounded-xl overflow-hidden border border-gray-200"
+                      >
+                        <div className="relative w-full h-[400px]">
+                          <img
+                            src={photo.url || "/placeholder.svg?height=400&width=400"}
+                            alt={`${listing.name} - Image ${index + 1}`}
+                            className="w-full h-full object-contain"
+                            onError={(e) => {
+                              e.currentTarget.src = "/placeholder.svg?height=400&width=400"
+                            }}
+                          />
+                        </div>
+                        <div className="bg-gray-50 py-2 px-3 text-sm text-gray-500">
+                          Image {index + 1} of {listing.listing_photos.length}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="w-full h-[400px] rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center bg-gray-50">
+                      <p className="text-gray-500">No images available</p>
                     </div>
-                  </button>
-                ))}
+                  )}
+                </div>
+                
+                {/* Navigation arrows */}
+                {listing.listing_photos && listing.listing_photos.length > 1 && (
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-2">
+                    <button 
+                      onClick={() => scrollToImage('prev')}
+                      className="bg-white/90 hover:bg-white rounded-full p-2 shadow-md transition-colors"
+                      aria-label="Previous image"
+                    >
+                      <ChevronUp className="h-5 w-5 text-gray-700" />
+                    </button>
+                    <button 
+                      onClick={() => scrollToImage('next')}
+                      className="bg-white/90 hover:bg-white rounded-full p-2 shadow-md transition-colors"
+                      aria-label="Next image"
+                    >
+                      <ChevronDown className="h-5 w-5 text-gray-700" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Listing Info */}
-            <div>
+            <div className="order-1 lg:order-2">
               <div className="flex justify-between items-start mb-4">
                 <h1 className="text-2xl font-bold text-gray-900">{listing.name}</h1>
                 <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
@@ -366,7 +445,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
 
               <div className="flex items-center gap-2 mb-4">
                 <span className="bg-[#3F3D56]/10 text-[#3F3D56] text-sm font-medium px-3 py-1 rounded-full">
-                  {listing.category}
+                  Categoria
                 </span>
                 <div className="flex items-center text-sm text-gray-600">
                   <Clock className="h-4 w-4 mr-1" />
@@ -383,27 +462,10 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
                 <h2 className="text-lg font-medium text-gray-900 mb-2">Seller Information</h2>
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-[#3F3D56] flex items-center justify-center text-white">
-                    <span className="font-medium">{listing.seller.name.charAt(0)}</span>
+                    <span className="font-medium text-sm">NV</span>
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">{listing.seller.name}</p>
-                    <div className="flex items-center">
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <svg
-                            key={i}
-                            className={`h-4 w-4 ${
-                              i < Math.floor(listing.seller.rating) ? "text-yellow-400" : "text-gray-300"
-                            }`}
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        ))}
-                      </div>
-                      <span className="text-sm text-gray-600 ml-1">({listing.seller.rating})</span>
-                    </div>
+                    <p className="font-medium text-gray-900">Nome Vendedor</p>
                   </div>
                 </div>
               </div>
@@ -412,7 +474,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
                     <p className="text-sm text-gray-600">Starting Price</p>
-                    <p className="text-lg font-medium text-gray-900">${listing.startPrice.toFixed(2)}</p>
+                    <p className="text-lg font-medium text-gray-900">${listing.start_price.toFixed(2)}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Current Bid</p>
@@ -427,10 +489,10 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
                       <input
                         type="number"
                         step="0.01"
-                        min={listing.current_bid + 0.01}
+                        min={listing?.current_bid ? listing.current_bid + 0.01 : 0.01}
                         value={bidAmount}
                         onChange={(e) => setBidAmount(e.target.value)}
-                        placeholder={`${(listing.current_bid + 1).toFixed(2)} or higher`}
+                        placeholder={`${(listing?.current_bid ? listing.current_bid + 1 : 1).toFixed(2)} or higher`}
                         className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3F3D56] focus:border-transparent"
                         required
                       />
@@ -448,7 +510,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
                   onClick={handleBuyNow}
                   className="w-full bg-[#3F3D56] hover:bg-[#2d2b40] text-white py-3 rounded-md text-sm font-medium transition-colors"
                 >
-                  Buy Now for ${listing.buy_now_price.toFixed(2)}
+                  Buy Now for ${listing?.buy_now_price.toFixed(2)}
                 </button>
               </div>
             </div>
@@ -459,10 +521,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
         <div className="mb-12">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Related Listings</h2>
-            <Link
-              href="/marketplace"
-              className="text-[#3F3D56] text-sm hover:underline flex items-center"
-            >
+            <Link href="/marketplace" className="text-[#3F3D56] text-sm hover:underline flex items-center">
               See All
             </Link>
           </div>
@@ -632,12 +691,6 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
                   d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"
                   clipRule="evenodd"
                 />
-              </svg>
-            </Link>
-            <Link href="#" className="text-gray-400 hover:text-white transition-colors">
-              <span className="sr-only">LinkedIn</span>
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
               </svg>
             </Link>
           </div>
