@@ -69,20 +69,12 @@ export default function ListingDetail({ id }: ListingDetailProps) {
   const nextImage = () => {
     if (listing?.listing_photos && listing.listing_photos.length > 0) {
       setCurrentImageIndex((prev) => (prev === listing.listing_photos.length - 1 ? 0 : prev + 1))
-      console.log(
-        "Next image clicked, new index:",
-        currentImageIndex === listing.listing_photos.length - 1 ? 0 : currentImageIndex + 1,
-      )
     }
   }
 
   const prevImage = () => {
     if (listing?.listing_photos && listing.listing_photos.length > 0) {
       setCurrentImageIndex((prev) => (prev === 0 ? listing.listing_photos.length - 1 : prev - 1))
-      console.log(
-        "Previous image clicked, new index:",
-        currentImageIndex === 0 ? listing.listing_photos.length - 1 : currentImageIndex - 1,
-      )
     }
   }
 
@@ -128,8 +120,6 @@ export default function ListingDetail({ id }: ListingDetailProps) {
       }
 
       const data: Listing = await res.json()
-      console.log("Fetched listing data:", data)
-      console.log("Listing photos:", data.listing_photos)
 
       setListing(data)
       setCurrentImageIndex(0) // Reset to first image when new listing is loaded
@@ -202,7 +192,6 @@ export default function ListingDetail({ id }: ListingDetailProps) {
   }
 
   const handleImageError = () => {
-    console.error("Image failed to load")
     setImageError(true)
   }
 
@@ -260,10 +249,6 @@ export default function ListingDetail({ id }: ListingDetailProps) {
     )
   }
 
-  // Debug info
-  console.log("Current image index:", currentImageIndex)
-  console.log("Current image URL:", currentImageUrl)
-  console.log("Total images:", listing.listing_photos?.length || 0)
 
   return (
     <div className="min-h-screen bg-gray-50">

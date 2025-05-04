@@ -18,6 +18,8 @@ import { cn } from "../../../../lib/utils"
 import useUserStore from "../../../../lib/userStore"
 
 
+
+
 // Toast components
 const ToastProvider = ToastPrimitive.Provider
 const ToastViewport = React.forwardRef<
@@ -319,13 +321,20 @@ const FormField = ({
   )
 }
 
+interface Category {
+  id: number
+  name: string
+  url: string
+}
+
 export default function CreateListing() {
   const router = useRouter()
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [startPrice, setStartPrice] = useState("")
   const [buyNowPrice, setBuyNowPrice] = useState("")
-  const [category, setCategory] = useState("")
+  const [categories, setCategories] = useState<Category[]>([])
+  const [category, setCategory] = useState<string>()
   const [endDate, setEndDate] = useState<Date>()
   const [endTime, setEndTime] = useState<string>("12:00")
   const [images, setImages] = useState<File[]>([])
@@ -338,15 +347,6 @@ export default function CreateListing() {
 
   const { user, isAuthenticated, hasHydrated } = useUserStore();
 
-  const [categories] = useState([
-    { id: 1, name: "Electronics" },
-    { id: 2, name: "Clothing" },
-    { id: 3, name: "Home & Garden" },
-    { id: 4, name: "Sports" },
-    { id: 5, name: "Collectibles" },
-    { id: 6, name: "Vehicles" },
-  ])
-
   // Clear errors when fields are updated
   useEffect(() => {
     const newErrors = { ...errors }
@@ -358,6 +358,7 @@ export default function CreateListing() {
     if (endDate) delete newErrors.endDate
     if (images.length >= 4) delete newErrors.images
     setErrors(newErrors)
+    fetchCategories()
   }, [user, name, description, startPrice, buyNowPrice, category, endDate, images])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -397,6 +398,20 @@ export default function CreateListing() {
     return Object.keys(newErrors).length === 0
   }
 
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch("http://localhost:1234/api/v1/category")
+      if (!res.ok) {
+        const errorMessage = await res.text()
+        throw new Error(errorMessage || "Failed to register")
+      }
+
+      setCategories(await res.json())
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
   
@@ -417,13 +432,13 @@ export default function CreateListing() {
       const combinedEndDateTime = endDate ? set(endDate, { hours, minutes }) : undefined
   
       const listingData = {
-        name,
-        description,
+        name: name,
+        description: description,
         buy_now_price: parseFloat(buyNowPrice).toString(),
         start_price: parseFloat(startPrice).toString(),
         expiration_date: combinedEndDateTime?.toISOString(),
         seller_id: user?.id.toString(),
-        category_id: null,
+        category_id: "3",
       }
   
       const formData = new FormData()
@@ -526,7 +541,7 @@ export default function CreateListing() {
                       </SelectTrigger>
                       <SelectContent>
                         {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.name}>
+                          <SelectItem key={cat.id} value={cat.id.toString()}>
                             {cat.name}
                           </SelectItem>
                         ))}
