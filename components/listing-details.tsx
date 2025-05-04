@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -65,10 +65,12 @@ export default function ListingDetail({ id }: ListingDetailProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [listing, setListing] = useState<Listing>()
   const [isLoading, setIsLoading] = useState(true)
+  const [bid, setBid] = useState<BidInfo>()
   const [bidAmount, setBidAmount] = useState("")
   const [timeLeft, setTimeLeft] = useState("")
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [imageError, setImageError] = useState(false)
+  const socketRef = useRef<WebSocket | null>(null)
 
   const user = useUserStore((state) => state.user)
 
@@ -90,6 +92,35 @@ export default function ListingDetail({ id }: ListingDetailProps) {
       setCurrentImageIndex((prev) => (prev === 0 ? listing.listing_photos.length - 1 : prev - 1))
     }
   }
+
+  useEffect(() => {
+    const wsUrl = `ws://localhost:1234/ws?listing_id=${id}`;
+    const socket = new WebSocket(wsUrl);
+    socketRef.current = socket;
+
+    socket.onmessage = (event) => {
+      const message = event.data;
+      try {
+        const data = JSON.parse(event.data);
+    
+        const bid: BidInfo = {
+          id: data.id ?? null,
+          bid_ammount: data.bid_ammount,
+          users_id: data.users_id ?? null,
+          listing_id: data.listing_id,
+        };
+    
+        setBid(bid)
+    
+      } catch (err) {
+        console.error("Failed to parse bid info:", err);
+      }
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, [id]);
 
   // Sample related listings
   const relatedListings: RelatedListing[] = [
@@ -464,7 +495,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Current Bid</p>
-                    <p className="text-lg font-medium text-gray-900">${listing.current_bid.bid_ammount.toFixed(2)}</p>
+                    <p className="text-lg font-medium text-gray-900">${bid?.bid_ammount.toFixed(2)}</p>
                   </div>
                 </div>
 
