@@ -26,7 +26,7 @@ interface Listing {
   description: string
   buy_now_price: number
   start_price: number
-  current_bid: number
+  current_bid: BidInfo
   created_at: Date
   expiration_date: Date
   status: string
@@ -51,6 +51,13 @@ interface RelatedListing {
 
 interface ListingDetailProps {
   id: string
+}
+
+interface BidInfo {
+  id: number | null;
+  bid_ammount: number;
+  users_id: number | null;
+  listing_id: number;
 }
 
 export default function ListingDetail({ id }: ListingDetailProps) {
@@ -173,20 +180,11 @@ export default function ListingDetail({ id }: ListingDetailProps) {
     e.preventDefault()
     const amount = Number.parseFloat(bidAmount)
 
-    if (isNaN(amount) || amount <= (listing?.current_bid || 0)) {
+    if (isNaN(amount) || amount <= (listing?.current_bid.bid_ammount || 0)) {
       alert("Please enter a bid higher than the current bid")
       return
     }
 
-    // Here you would normally send the bid to your API
-    alert(`Bid of $${amount} placed successfully!`)
-    // Update the current bid in the UI
-    if (listing) {
-      setListing({
-        ...listing,
-        current_bid: amount,
-      })
-    }
     setBidAmount("")
   }
 
@@ -466,7 +464,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Current Bid</p>
-                    <p className="text-lg font-medium text-gray-900">${listing.current_bid.toFixed(2)}</p>
+                    <p className="text-lg font-medium text-gray-900">${listing.current_bid.bid_ammount.toFixed(2)}</p>
                   </div>
                 </div>
 
@@ -477,10 +475,10 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                       <input
                         type="number"
                         step="0.01"
-                        min={listing?.current_bid ? listing.current_bid + 0.01 : 0.01}
+                        min={listing?.current_bid ? listing.current_bid.bid_ammount + 0.01 : 0.01}
                         value={bidAmount}
                         onChange={(e) => setBidAmount(e.target.value)}
-                        placeholder={`${(listing?.current_bid ? listing.current_bid + 1 : 1).toFixed(2)} or higher`}
+                        placeholder={`${(listing?.current_bid ? listing.current_bid.bid_ammount + 1 : 1).toFixed(2)} or higher`}
                         className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#3F3D56] focus:border-transparent"
                         required
                       />

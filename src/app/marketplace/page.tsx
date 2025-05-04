@@ -17,13 +17,20 @@ interface SellerInfo {
   name: string;
 }
 
+interface BidInfo {
+  id: number | null;
+  bid_ammount: number;
+  users_id: number | null;
+  listing_id: number;
+}
+
 interface Listing {
   id: number
   name: string
   description: string
   buy_now_price: number
   startPrice: number
-  current_bid: number
+  current_bid: BidInfo
   createdAt: Date
   expiration_date: Date
   status: string
@@ -302,7 +309,7 @@ export default function Marketplace() {
                       <div className="flex flex-col gap-1 mb-3">
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600">Current Bid</span>
-                          <span className="font-medium text-gray-900">${auction.current_bid}</span>
+                          <span className="font-medium text-gray-900">${auction.current_bid.bid_ammount}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600">Buy Now Price</span>
@@ -352,7 +359,7 @@ export default function Marketplace() {
                       <div className="flex flex-col gap-1 mb-3">
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600">Current Bid</span>
-                          <span className="font-medium text-gray-900">${auction.current_bid}</span>
+                          <span className="font-medium text-gray-900">${auction.current_bid.bid_ammount}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600">Buy Now Price</span>
