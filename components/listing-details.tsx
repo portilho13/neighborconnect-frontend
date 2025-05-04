@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Heart, Clock, Share2, Bell, Menu, ChevronUp, ChevronDown } from "lucide-react"
+import { ArrowLeft, Heart, Clock, Share2, Bell, Menu } from "lucide-react"
 import useUserStore from "../lib/userStore"
 
 interface Listing_Photo {
@@ -354,18 +354,63 @@ export default function ListingDetail({ id }: ListingDetailProps) {
         {/* Listing Detail */}
         <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4 md:p-6 mb-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Simple Image Carousel */}
+            {/* Image Carousel */}
             <div className="order-2 lg:order-1">
-              {/* Thumbnails at the top for quick navigation */}
+              {/* Main Carousel */}
+              <div className="relative mb-4">
+                {listing.listing_photos && listing.listing_photos.length > 0 ? (
+                  <div className="relative w-full h-[400px] rounded-xl overflow-hidden border border-gray-200">
+                    <img
+                      src={currentImageUrl || "/placeholder.svg"}
+                      alt={`${listing.name} - Image ${currentImageIndex + 1}`}
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        e.currentTarget.src = "/placeholder.svg?height=400&width=400"
+                      }}
+                    />
+                    
+                    {/* Navigation arrows */}
+                    {listing.listing_photos.length > 1 && (
+                      <>
+                        <button 
+                          onClick={prevImage}
+                          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-md transition-colors"
+                          aria-label="Previous image"
+                        >
+                          <ArrowLeft className="h-5 w-5 text-gray-700" />
+                        </button>
+                        <button 
+                          onClick={nextImage}
+                          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-md transition-colors"
+                          aria-label="Next image"
+                        >
+                          <ArrowLeft className="h-5 w-5 text-gray-700 rotate-180" />
+                        </button>
+                      </>
+                    )}
+                    
+                    {/* Image counter */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gray-50/80 py-2 px-3 text-sm text-gray-500 text-center">
+                      Image {currentImageIndex + 1} of {listing.listing_photos.length}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-[400px] rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center bg-gray-50">
+                    <p className="text-gray-500">No images available</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Thumbnails carousel */}
               {listing.listing_photos && listing.listing_photos.length > 1 && (
-                <div className="mb-4 flex gap-2 overflow-x-auto pb-2">
+                <div className="flex gap-2 overflow-x-auto pb-2">
                   {listing.listing_photos.map((photo, index) => (
                     <button
                       key={photo.id}
-                      onClick={() => {
-                        document.getElementById(`image-${index}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                      }}
-                      className="relative min-w-[60px] w-[60px] h-[60px] rounded-md overflow-hidden border-2 border-gray-200 hover:border-[#3F3D56] transition-colors"
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`relative min-w-[60px] w-[60px] h-[60px] rounded-md overflow-hidden border-2 transition-colors ${
+                        currentImageIndex === index ? 'border-[#3F3D56]' : 'border-gray-200 hover:border-gray-300'
+                      }`}
                     >
                       <img
                         src={photo.url || "/placeholder.svg?height=60&width=60"}
@@ -379,59 +424,6 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                   ))}
                 </div>
               )}
-
-              {/* Vertical stack of all images with navigation arrows */}
-              <div className="relative">
-                <div className="space-y-6 overflow-y-auto max-h-[800px] pr-2 scrollbar-thin scrollbar-track-gray-100 pb-12">
-                  {listing.listing_photos && listing.listing_photos.length > 0 ? (
-                    listing.listing_photos.map((photo, index) => (
-                      <div 
-                        key={photo.id} 
-                        id={`image-${index}`}
-                        className="image-container w-full rounded-xl overflow-hidden border border-gray-200"
-                      >
-                        <div className="relative w-full h-[400px]">
-                          <img
-                            src={photo.url || "/placeholder.svg?height=400&width=400"}
-                            alt={`${listing.name} - Image ${index + 1}`}
-                            className="w-full h-full object-contain"
-                            onError={(e) => {
-                              e.currentTarget.src = "/placeholder.svg?height=400&width=400"
-                            }}
-                          />
-                        </div>
-                        <div className="bg-gray-50 py-2 px-3 text-sm text-gray-500">
-                          Image {index + 1} of {listing.listing_photos.length}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="w-full h-[400px] rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center bg-gray-50">
-                      <p className="text-gray-500">No images available</p>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Navigation arrows */}
-                {listing.listing_photos && listing.listing_photos.length > 1 && (
-                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-2">
-                    <button 
-                      onClick={() => scrollToImage('prev')}
-                      className="bg-white/90 hover:bg-white rounded-full p-2 shadow-md transition-colors"
-                      aria-label="Previous image"
-                    >
-                      <ChevronUp className="h-5 w-5 text-gray-700" />
-                    </button>
-                    <button 
-                      onClick={() => scrollToImage('next')}
-                      className="bg-white/90 hover:bg-white rounded-full p-2 shadow-md transition-colors"
-                      aria-label="Next image"
-                    >
-                      <ChevronDown className="h-5 w-5 text-gray-700" />
-                    </button>
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* Listing Info */}
