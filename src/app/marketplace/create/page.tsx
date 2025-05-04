@@ -448,7 +448,7 @@ export default function CreateListing() {
         formData.append('images', file)
       })
   
-      const response = await fetch('http://localhost:1234/api/v1/listing/create', {
+      const response = await fetch('http://localhost:1234/api/v1/listing/', {
         method: 'POST',
         body: formData,
       })

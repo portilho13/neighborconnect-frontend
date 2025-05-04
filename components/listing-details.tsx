@@ -14,6 +14,12 @@ interface Listing_Photo {
   url: string
 }
 
+interface SellerInfo {
+  id: number;
+  name: string;
+}
+
+
 interface Listing {
   id: number
   name: string
@@ -24,8 +30,8 @@ interface Listing {
   created_at: Date
   expiration_date: Date
   status: string
-  sellerId: number
-  category_id: Category[]
+  seller: SellerInfo
+  category: Category
   listing_photos: Listing_Photo[]
 }
 
@@ -422,7 +428,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
 
               <div className="flex items-center gap-2 mb-4">
                 <span className="bg-[#3F3D56]/10 text-[#3F3D56] text-sm font-medium px-3 py-1 rounded-full">
-                  Categoria
+                  {listing.category.name}
                 </span>
                 <div className="flex items-center text-sm text-gray-600">
                   <Clock className="h-4 w-4 mr-1" />
@@ -439,10 +445,15 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                 <h2 className="text-lg font-medium text-gray-900 mb-2">Seller Information</h2>
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-[#3F3D56] flex items-center justify-center text-white">
-                    <span className="font-medium text-sm">NV</span>
+                  <span className="font-medium text-sm">
+                  {listing.seller.name
+                    ?.split(' ')
+                    .map(n => n[0])
+                    .join('')}
+                </span>
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">Nome Vendedor</p>
+                    <p className="font-medium text-gray-900">{listing.seller.name}</p>
                   </div>
                 </div>
               </div>

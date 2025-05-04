@@ -12,6 +12,11 @@ interface Listing_Photo {
   url: string;
 }
 
+interface SellerInfo {
+  id: number;
+  name: string;
+}
+
 interface Listing {
   id: number
   name: string
@@ -22,8 +27,8 @@ interface Listing {
   createdAt: Date
   expiration_date: Date
   status: string
-  sellerId: number
-  category_id: Category[]
+  seller: SellerInfo
+  category_id: Category
   listing_photos: Listing_Photo[]
 }
 
@@ -91,13 +96,15 @@ export default function Marketplace() {
 
       const myAuctionsArr: Listing[] = []
 
-      data.forEach((listing: Listing) => {
-        console.log(listing.id)
-        if (user?.id == listing.sellerId) {
-          myAuctionsArr.push(listing)
-        }
-      })
+      if (listings) {
+        data.forEach((listing: Listing) => {
+          console.log(listing.id)
+          if (user?.id == listing.seller.id) {
+            myAuctionsArr.push(listing)
+          }
+        })
 
+      }
       setMyAuctions(myAuctionsArr)
     } catch (error) {
       console.error(error)
