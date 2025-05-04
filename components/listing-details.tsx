@@ -2,12 +2,13 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, ReactEventHandler } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Heart, Clock, Share2, Bell, Menu } from "lucide-react"
 import useUserStore from "../lib/userStore"
+import { json } from "stream/consumers"
 
 interface Listing_Photo {
   id: number
@@ -72,8 +73,6 @@ export default function ListingDetail({ id }: ListingDetailProps) {
   const [imageError, setImageError] = useState(false)
   const socketRef = useRef<WebSocket | null>(null)
 
-  const user = useUserStore((state) => state.user)
-
   // Get current image URL
   const currentImageUrl =
     listing?.listing_photos && listing.listing_photos.length > 0 && currentImageIndex < listing.listing_photos.length
@@ -93,34 +92,32 @@ export default function ListingDetail({ id }: ListingDetailProps) {
     }
   }
 
+  const handlePlaceBid = async() => {
+    const response = await fetch('http://localhost:1234/api/v1/bid/', {
+      method: 'POST',
+      body: JSON.stringify({
+        "bid_ammount": Number(bidAmount),
+        "users_id": user?.id,
+        "listing_id": Number(id)
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to create listing')
+    }
+  }
+
+  const { user, isAuthenticated, hasHydrated } = useUserStore();
+
+
   useEffect(() => {
-    const wsUrl = `ws://localhost:1234/ws?listing_id=${id}`;
-    const socket = new WebSocket(wsUrl);
-    socketRef.current = socket;
+    if (!hasHydrated) return;
 
-    socket.onmessage = (event) => {
-      const message = event.data;
-      try {
-        const data = JSON.parse(event.data);
-    
-        const bid: BidInfo = {
-          id: data.id ?? null,
-          bid_ammount: data.bid_ammount,
-          users_id: data.users_id ?? null,
-          listing_id: data.listing_id,
-        };
-    
-        setBid(bid)
-    
-      } catch (err) {
-        console.error("Failed to parse bid info:", err);
-      }
-    };
+    if (!isAuthenticated) {
+      router.push("/login/client");
+    }
+  }, [hasHydrated, isAuthenticated, user]);
 
-    return () => {
-      socket.close();
-    };
-  }, [id]);
 
   // Sample related listings
   const relatedListings: RelatedListing[] = [
@@ -177,7 +174,34 @@ export default function ListingDetail({ id }: ListingDetailProps) {
 
   // Fetch listing data
   useEffect(() => {
+    const wsUrl = `ws://localhost:1234/ws?listing_id=${id}`;
+    const socket = new WebSocket(wsUrl);
+    socketRef.current = socket;
+
+    socket.onmessage = (event) => {
+      const message = event.data;
+      try {
+        const data = JSON.parse(event.data);
+    
+        const bid: BidInfo = {
+          id: data.id ?? null,
+          bid_ammount: data.bid_ammount,
+          users_id: data.users_id ?? null,
+          listing_id: data.listing_id,
+        };
+    
+        setBid(bid)
+    
+      } catch (err) {
+        console.error("Failed to parse bid info:", err);
+      }
+    };
+
     fetchListing(Number(id))
+
+    return () => {
+      socket.close();
+    };
   }, [id])
 
   // Calculate time left until expiration
@@ -497,6 +521,11 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                     <p className="text-sm text-gray-600">Current Bid</p>
                     <p className="text-lg font-medium text-gray-900">${bid?.bid_ammount.toFixed(2)}</p>
                   </div>
+                  <div>
+                  <p className={`text-md ${bid?.users_id == user?.id ? 'text-green-600' : 'text-red-600'}`}>
+                    {bid?.users_id == user?.id ? 'You are Winning !' : 'You NOT Winning'}
+                  </p>
+                  </div>
                 </div>
 
                 <form onSubmit={handleBid} className="mb-4">
@@ -517,6 +546,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                     <button
                       type="submit"
                       className="bg-[#3F3D56] hover:bg-[#2d2b40] text-white px-4 py-2 rounded-md transition-colors"
+                      onClick={() => {handlePlaceBid()}}
                     >
                       Place Bid
                     </button>
