@@ -915,9 +915,9 @@ export default function ManagerDashboard() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                 <span
                                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                    apartment.status === "Occupied"
+                                    apartment.status === "occupied"
                                     ? "bg-green-100 text-green-800"
-                                    : apartment.status === "Vacant"
+                                    : apartment.status === "unoccupied"
                                         ? "bg-blue-100 text-blue-800"
                                         : "bg-yellow-100 text-yellow-800"
                                 }`}
@@ -925,22 +925,35 @@ export default function ManagerDashboard() {
                                 {apartment.status.charAt(0).toUpperCase() + apartment.status.slice(1)}
                                 </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{apartment.last_rent.final_amount}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                {apartment.last_rent.status !== "-" && (
-                                <span
-                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                        apartment.last_rent.status === "paid"
-                                        ? "bg-green-100 text-green-800"
-                                        : "bg-red-100 text-red-800"
-                                    }`}
-                                >
-                                    {apartment.last_rent.status.charAt(0).toUpperCase() + apartment.last_rent.status.slice(1)}
-                                </span>
-                                )}
-                                {apartment.last_rent.status === "-" && "-"}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{apartment.last_rent.month}/{apartment.last_rent.year}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{apartment.rent}</td>
+                            {apartment.last_rent ? (
+                                <>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                    {apartment.last_rent.status !== "-" ? (
+                                        <span
+                                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                            apartment.last_rent.status === "paid"
+                                            ? "bg-green-100 text-green-800"
+                                            : "bg-red-100 text-red-800"
+                                        }`}
+                                        >
+                                        {apartment.last_rent.status.charAt(0).toUpperCase() + apartment.last_rent.status.slice(1)}
+                                        </span>
+                                    ) : (
+                                        "-"
+                                    )}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {apartment.last_rent.month}/{apartment.last_rent.year}
+                                    </td>
+                                </>
+                                ) : (
+                                <>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">N/A</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">N/A</td>
+                                </>
+                            )}
+
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <button className="text-[#3F3D56] hover:text-[#2d2b40] mr-3">Edit</button>
                                 <button className="text-red-600 hover:text-red-800">Remove</button>
@@ -1130,15 +1143,15 @@ export default function ManagerDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                     <p className="text-sm text-gray-500 mb-1">Total Listings</p>
-                    <p className="text-2xl font-semibold text-gray-900">56</p>
+                    <p className="text-2xl font-semibold text-gray-900">{dashboardInfo?.listings?.length ?? 0}</p>
                     </div>
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                     <p className="text-sm text-gray-500 mb-1">Active Listings</p>
-                    <p className="text-2xl font-semibold text-gray-900">42</p>
+                    <p className="text-2xl font-semibold text-gray-900">{dashboardInfo?.listings?.filter(li => li.status === "active").length}</p>
                     </div>
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                     <p className="text-sm text-gray-500 mb-1">Sold Items</p>
-                    <p className="text-2xl font-semibold text-gray-900">14</p>
+                    <p className="text-2xl font-semibold text-gray-900">{dashboardInfo?.listings?.filter(li => li.status !== "active").length}</p>
                     </div>
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                     <p className="text-sm text-gray-500 mb-1">Revenue from Fees</p>
@@ -1179,7 +1192,13 @@ export default function ManagerDashboard() {
                             scope="col"
                             className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
-                            Price
+                            Buy Now Price
+                            </th>
+                            <th
+                            scope="col"
+                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                            >
+                            Current Bid
                             </th>
                             <th
                             scope="col"
@@ -1199,27 +1218,30 @@ export default function ManagerDashboard() {
                         </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                        {marketplaceListings.map((listing) => (
+                        {dashboardInfo.listings?.map((listing) => (
                             <tr key={listing.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {listing.title}
+                                {listing.name}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{listing.seller}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{listing.price}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{listing.listed}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{listing.seller.name}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{listing.buy_now_price}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{listing.current_bid.bid_ammount}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {new Date(listing.created_at).toLocaleDateString()}
+                            </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                                 <span
                                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                    listing.status === "Active"
+                                    listing.status === "active"
                                     ? "bg-green-100 text-green-800"
                                     : "bg-gray-100 text-gray-800"
                                 }`}
                                 >
-                                {listing.status}
+                                {listing.status.charAt(0).toUpperCase() + listing.status.slice(1)}
                                 </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button className="text-[#3F3D56] hover:text-[#2d2b40] mr-3">View</button>
+                                <button className="text-[#3F3D56] hover:text-[#2d2b40] mr-3" onClick={() => {router.push(`http://localhost:3000/marketplace/${listing.id}`)}}>View</button>
                                 <button className="text-red-600 hover:text-red-800">Remove</button>
                             </td>
                             </tr>
