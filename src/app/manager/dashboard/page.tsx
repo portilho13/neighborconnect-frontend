@@ -26,30 +26,68 @@ import {
 import useUserStore, { User } from "../../../../lib/userStore"
 import { useRouter } from "next/navigation"
 
-interface Apartment {
+interface Rent {
+    id: number;
+    month: number;
+    year: number;
+    base_amount: number;
+    reduction: number;
+    final_amount: number;
+    apartment_id: number;
+    status: string;
+    due_day: number;
+  }
+  
+  interface Apartment {
     id: number;
     n_bedrooms: number;
     floor: number;
     rent: number;
     manager_id: number;
     status: string;
-}
-
-interface ListingInfo {
+    last_rent: Rent;
+  }
+  
+  interface BidInfo {
+    id: number | null;
+    bid_ammount: number;
+    bid_time: Date;
+    users_id: number | null;
+    listing_id: number;
+  }
+  
+  interface Listing_Photo {
+    id: number;
+    url: string;
+  }
+  
+  interface SellerInfo {
+    id: number;
+    name: string;
+  }
+  
+  interface Listing {
     id: number;
     name: string;
     description: string;
     buy_now_price: number;
     start_price: number;
-    current_bid: number;
-    created_at: string;
-    expiration_time: string;
+    current_bid: BidInfo;
+    created_at: Date;
+    expiration_date: Date;
     status: string;
-    seller_id: number;
-    category_id: number;
-}
-
-interface CommunityEvent {
+    seller: SellerInfo;
+    category: Category;
+    listing_photos: Listing_Photo[] | null;
+  }
+  
+  interface Category {
+    id: number;
+    name: string;
+    url: string;
+  }
+  
+  interface CommunityEvent {
     id: number | null;
     name: string;
     percentage: number;
@@ -63,14 +101,21 @@ interface CommunityEvent {
     current_ocupation: number;
   }
   
+  interface UserInfo {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    apartment_id: number;
+    avatar: string;
+  }
   
-  
-interface ManagerDashboardInfo {
-    apartments: Apartment[];
-    users: User[];
-    listings: ListingInfo[];
-    events: CommunityEvent[];
-}
+  interface ManagerDashboardInfo {
+    apartments: Apartment[] | null;
+    users: UserInfo[] | null;
+    listings: Listing[] | null;
+    events: CommunityEvent[] | null;
+  }
 
 
 
@@ -86,40 +131,57 @@ export default function ManagerDashboard() {
 
     const { user, isAuthenticated, hasHydrated } = useUserStore();
 
-    useEffect(() => {
-        if (!hasHydrated) return;
+    const [isLoading, setIsLoading] = useState(true);
 
-        if (!isAuthenticated) { // Implement also to check if user role is manager
+    useEffect(() => {
+      if (!hasHydrated) return;
+    
+      if (!isAuthenticated) {
         router.push("/login/manager");
-        } else if (user?.id) {
-            fetchDashboardInfo(user.id)
-        }
+      } else if (user?.id) {
+        fetchDashboardInfo(user.id);
+      }
     }, [hasHydrated, isAuthenticated, user]);
 
-    const fetchDashboardInfo = async(id: Number) => {
-        try {
-            const res = await fetch(`http://localhost:1234/api/v1/manager/dashboard/info?manager_id=${id}`)
-            if (!res.ok) {
-                const errorMessage = await res.text();
-                throw new Error(errorMessage || 'Failed to register');
-              
-            }
-
-            const data: ManagerDashboardInfo = await res.json()
-
-            setDashboardInfo(data)
-        } catch(error) {
-            console.error(error)
+    useEffect(() => {
+        if (dashboardInfo) {
+          console.log("Updated dashboardInfo:", dashboardInfo);
         }
+      }, [dashboardInfo]);
+    
+      const fetchDashboardInfo = async (id: Number) => {
+        try {
+            
+          const res = await fetch(`http://localhost:1234/api/v1/manager/dashboard/info?manager_id=${id}`);
+          if (!res.ok) throw new Error(await res.text());
+          
+          let data: ManagerDashboardInfo;
+          try {
+            data = await res.json();
+            setDashboardInfo(data);
+          } catch (error) {
+            console.error("JSON parsing error:", error);
+            // Don't update state if JSON parsing failed
+          }
+        } catch (error) {
+          console.error("Fetch error:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+    
+    if (isLoading || !dashboardInfo) {
+        console.log(dashboardInfo)
+        return <div>Loading dashboard...</div>;
     }
 
 
     // Mock data for the dashboard
     const stats = [
-        { title: "Total Apartments", value: `${dashboardInfo?.apartments.length}`, change: null, icon: Building },
-        { title: "Active Residents", value: dashboardInfo?.users ? dashboardInfo?.users.length: 0, change: null, icon: Users },
+        { title: "Total Apartments", value: dashboardInfo?.apartments?.length ?? 0, change: null, icon: Building },
+        { title: "Active Residents", value: dashboardInfo?.users?.length ?? 0, change: null, icon: Users },
         { title: "Monthly Revenue", value: "$24,500", change: null, icon: DollarSign },
-        { title: "Marketplace Listings", value: dashboardInfo?.listings ? dashboardInfo?.listings.length : 0, change: null, icon: ShoppingBag },
+        { title: "Marketplace Listings", value: dashboardInfo?.listings?.length ?? 0, change: null, icon: ShoppingBag },
     ]
 
 
@@ -776,18 +838,18 @@ export default function ManagerDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                     <p className="text-sm text-gray-500 mb-1">Total Apartments</p>
-                    <p className="text-2xl font-semibold text-gray-900">{dashboardInfo?.apartments.length}</p>
+                    <p className="text-2xl font-semibold text-gray-900">{dashboardInfo?.apartments?.length ?? 0}</p>
                     </div>
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                     <p className="text-sm text-gray-500 mb-1">Occupied</p>
                     <p className="text-2xl font-semibold text-gray-900">
-                        {dashboardInfo?.apartments.filter((apartment: Apartment) => apartment.status === "occupied").length ?? 0}
+                        {(dashboardInfo?.apartments ?? []).filter((apartment: Apartment) => apartment.status === "occupied").length}
                     </p>
                     </div>
                     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                     <p className="text-sm text-gray-500 mb-1">Vacant</p>
                     <p className="text-2xl font-semibold text-gray-900">
-                        {dashboardInfo?.apartments.filter((apartment: Apartment) => apartment.status === "unoccupied").length ?? 0}
+                        {(dashboardInfo?.apartments ?? []).filter((apartment: Apartment) => apartment.status === "unoccupied").length}
                     </p>
                     </div>
                 </div>
@@ -825,7 +887,7 @@ export default function ManagerDashboard() {
                             scope="col"
                             className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                             >
-                            Resident
+                            Rent Value
                             </th>
                             <th
                             scope="col"
@@ -845,7 +907,7 @@ export default function ManagerDashboard() {
                         </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                        {apartments.map((apartment) => (
+                        {dashboardInfo.apartments?.map((apartment) => (
                             <tr key={apartment.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 {apartment.id}
@@ -860,25 +922,25 @@ export default function ManagerDashboard() {
                                         : "bg-yellow-100 text-yellow-800"
                                 }`}
                                 >
-                                {apartment.status}
+                                {apartment.status.charAt(0).toUpperCase() + apartment.status.slice(1)}
                                 </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{apartment.resident}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{apartment.last_rent.final_amount}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                {apartment.rentStatus !== "-" && (
+                                {apartment.last_rent.status !== "-" && (
                                 <span
                                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                    apartment.rentStatus === "Paid"
+                                        apartment.last_rent.status === "paid"
                                         ? "bg-green-100 text-green-800"
                                         : "bg-red-100 text-red-800"
                                     }`}
                                 >
-                                    {apartment.rentStatus}
+                                    {apartment.last_rent.status.charAt(0).toUpperCase() + apartment.last_rent.status.slice(1)}
                                 </span>
                                 )}
-                                {apartment.rentStatus === "-" && "-"}
+                                {apartment.last_rent.status === "-" && "-"}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{apartment.lastPayment}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{apartment.last_rent.month}/{apartment.last_rent.year}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <button className="text-[#3F3D56] hover:text-[#2d2b40] mr-3">Edit</button>
                                 <button className="text-red-600 hover:text-red-800">Remove</button>
