@@ -16,27 +16,39 @@ import {
   User,
   Check,
   AlertCircle,
+  X,
 } from "lucide-react"
 
 import useUserStore from "../../../lib/userStore"
 import LoadingSpinner from "../../../components/loading-spinner"
 import { useRouter } from "next/navigation"
 
-
 interface Rent {
-  id: number;
-  month: number;
-  year: number;
-  base_amount: number;
-  reduction: number;
-  final_amount: number;
-  apartment_id: number;
-  status: string;
-  due_day: number;
+  id: number
+  month: number
+  year: number
+  base_amount: number
+  reduction: number
+  final_amount: number
+  apartment_id: number
+  status: string
+  due_day: number
 }
 
-const months = [ "January", "February", "March", "April", "May", "June", 
-  "July", "August", "September", "October", "November", "December" ];
+const months = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+]
 
 const maxDiscout = 400
 
@@ -49,76 +61,106 @@ export default function Dashboard() {
   const endDate = "Jan 31"
 
   const [isLoading, setIsLoading] = useState(false)
-
   const [rents, setRents] = useState<Rent[]>([])
+  const [discountCodePopupOpen, setDiscountCodePopupOpen] = useState(false)
+  const [discountCode, setDiscountCode] = useState("")
+  const [discountCodeError, setDiscountCodeError] = useState("")
+  const [discountCodeSuccess, setDiscountCodeSuccess] = useState("")
 
-
-  const { user, isAuthenticated, hasHydrated } = useUserStore();
+  const { user, isAuthenticated, hasHydrated } = useUserStore()
 
   const router = useRouter()
 
-
-  const fetchRent = async(apartment_id: Number) => {
+  const fetchRent = async (apartment_id: number) => {
     setIsLoading(true)
     try {
       const res = await fetch(`http://localhost:1234/api/v1/rent?apartment_id=${apartment_id}`)
 
       if (!res.ok) {
-        const errorMessage = await res.text();
-        throw new Error(errorMessage || 'Failed to register');
+        const errorMessage = await res.text()
+        throw new Error(errorMessage || "Failed to register")
       }
-      
+
       const data: Rent[] = await res.json()
 
       setRents(data)
-    } catch(error) {
+    } catch (error) {
       console.error(error)
-    }finally {
+    } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    if (!hasHydrated) return;
+    if (!hasHydrated) return
 
     if (!isAuthenticated) {
-      router.push("/login/client");
+      router.push("/login/client")
     } else if (user?.apartmentId) {
-      fetchRent(user.apartmentId);
+      fetchRent(user.apartmentId)
     }
-  }, [hasHydrated, isAuthenticated, user]);
-
-
+  }, [hasHydrated, isAuthenticated, user])
 
   // Rent data with discount information
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0)
 
+  const handleApplyDiscountCode = async () => {
+    if (!discountCode.trim()) {
+      setDiscountCodeError("Please enter a discount code")
+      return
+    }
 
+    try {
+        const res = await fetch("http://localhost:1234/api/v1/event/reward", {
+          method: "POST",
+          body: JSON.stringify({
+            "code": discountCode,
+            "user_id": user?.id
+          })
+      })
+
+      if (!res.ok) {
+        setDiscountCodeError(await res.text())
+      } else {
+        setDiscountCodeSuccess("Discount code applied successfully!")
+      }
+      
+    } catch (error) {
+      console.log(error)
+    }
+
+
+    setTimeout(() => {
+      setDiscountCodePopupOpen(false)
+      setDiscountCodeSuccess("")
+      setDiscountCode("")
+    }, 1000)
+    router.push("/dashboard")
+  }
 
   if (isLoading) {
-    return <LoadingSpinner loading={true} size="lg" className="absolute left-4" />;
+    return <LoadingSpinner loading={true} size="lg" className="absolute left-4" />
   }
 
-  const currentRent = rents[currentMonthIndex];
+  const currentRent = rents[currentMonthIndex]
 
   if (!currentRent) {
-    return <div>Rent information not found for the selected month.</div>;
+    return <div>Rent information not found for the selected month.</div>
   }
-  
+
   // Calculate the discount amount as a percentage of the base amount
-  const discountAmount = (currentRent.base_amount * currentRent.reduction).toFixed(2);
-    
+  const discountAmount = (currentRent.base_amount * currentRent.reduction).toFixed(2)
+
   // For display purposes
-  const discountPercentage = currentRent.reduction * 100;
-  
+  const discountPercentage = currentRent.reduction * 100
+
   // Percentage of rent being paid after discount (for circular progress bar)
-  const percentagePaid = (currentRent.final_amount / currentRent.base_amount) * 100;
-  
+  const percentagePaid = (currentRent.final_amount / currentRent.base_amount) * 100
+
   // Circle progress bar setup
-  const radius = 70;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (percentagePaid / 100) * circumference;
-  
+  const radius = 70
+  const circumference = 2 * Math.PI * radius
+  const offset = circumference - (percentagePaid / 100) * circumference
 
   // Navigation functions
   const goToPreviousMonth = () => {
@@ -255,9 +297,7 @@ export default function Dashboard() {
                   disabled={currentMonthIndex >= rents.length - 1}
                   aria-label="Previous month"
                 >
-                  <ChevronLeft
-                    className={`h-5 w-5 ${currentMonthIndex >= rents.length - 1 ? "opacity-50" : ""}`}
-                  />
+                  <ChevronLeft className={`h-5 w-5 ${currentMonthIndex >= rents.length - 1 ? "opacity-50" : ""}`} />
                 </button>
                 <button
                   className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
@@ -327,7 +367,7 @@ export default function Dashboard() {
                   </div>
                   <div className="mt-2 text-xs text-gray-400">Due by {currentRent.due_day}</div>
                 </div>
-                
+
                 {/* Payment Status - Added between discount progress and buttons */}
                 <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-100">
                   <div className="flex justify-between items-center">
@@ -346,10 +386,13 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <button className="flex items-center justify-center gap-2 bg-[#3F3D56] hover:bg-[#2d2b40] transition-colors rounded-lg py-3 font-medium text-white">
+                <div className="grid grid-cols-2 gap-3 relative">
+                  <button
+                    className="flex items-center justify-center gap-2 bg-[#3F3D56] hover:bg-[#2d2b40] transition-colors rounded-lg py-3 font-medium text-white"
+                    onClick={() => setDiscountCodePopupOpen(true)}
+                  >
                     <Plus className="h-4 w-4" />
-                    View Details
+                    Add Discount Code
                   </button>
                   <button
                     className={`flex items-center justify-center gap-2 rounded-lg py-3 font-medium ${
@@ -362,6 +405,45 @@ export default function Dashboard() {
                     <CreditCard className="h-4 w-4" />
                     {currentRent.status === "paid" ? "Paid" : "Pay Rent"}
                   </button>
+
+                  {/* Discount Code Popup */}
+                  {discountCodePopupOpen && (
+                    <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 p-4 w-full z-10">
+                      <div className="flex justify-between items-center mb-3">
+                        <h3 className="font-medium text-gray-900">Enter Discount Code</h3>
+                        <button
+                          onClick={() => {
+                            setDiscountCodePopupOpen(false)
+                            setDiscountCode("")
+                            setDiscountCodeError("")
+                            setDiscountCodeSuccess("")
+                          }}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      <div className="mb-3">
+                        <input
+                          type="text"
+                          value={discountCode}
+                          onChange={(e) => setDiscountCode(e.target.value)}
+                          placeholder="Enter code"
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#3F3D56]"
+                        />
+                        {discountCodeError && <p className="text-red-500 text-xs mt-1">{discountCodeError}</p>}
+                        {discountCodeSuccess && <p className="text-green-500 text-xs mt-1">{discountCodeSuccess}</p>}
+                      </div>
+
+                      <button
+                        onClick={handleApplyDiscountCode}
+                        className="w-full bg-[#3F3D56] hover:bg-[#2d2b40] text-white rounded-lg py-2 text-sm font-medium"
+                      >
+                        Apply Code
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
