@@ -2,13 +2,12 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef, ReactEventHandler } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Heart, Clock, Share2, Bell, Menu } from "lucide-react"
 import useUserStore from "../lib/userStore"
-import { json } from "stream/consumers"
 
 interface Listing_Photo {
   id: number
@@ -16,10 +15,9 @@ interface Listing_Photo {
 }
 
 interface SellerInfo {
-  id: number;
-  name: string;
+  id: number
+  name: string
 }
-
 
 interface Listing {
   id: number
@@ -55,10 +53,10 @@ interface ListingDetailProps {
 }
 
 interface BidInfo {
-  id: number | null;
-  bid_ammount: number;
-  users_id: number | null;
-  listing_id: number;
+  id: number | null
+  bid_ammount: number
+  users_id: number | null
+  listing_id: number
 }
 
 export default function ListingDetail({ id }: ListingDetailProps) {
@@ -72,6 +70,18 @@ export default function ListingDetail({ id }: ListingDetailProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [imageError, setImageError] = useState(false)
   const socketRef = useRef<WebSocket | null>(null)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const dateNow = new Date()
+      if (listing?.expiration_date && new Date(listing.expiration_date) <= dateNow) {
+        router.push("/marketplace")
+        clearInterval(interval)
+      }
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [listing?.expiration_date])
 
   // Get current image URL
   const currentImageUrl =
@@ -92,32 +102,30 @@ export default function ListingDetail({ id }: ListingDetailProps) {
     }
   }
 
-  const handlePlaceBid = async() => {
-    const response = await fetch('http://localhost:1234/api/v1/bid/', {
-      method: 'POST',
+  const handlePlaceBid = async () => {
+    const response = await fetch("http://localhost:1234/api/v1/bid/", {
+      method: "POST",
       body: JSON.stringify({
-        "bid_ammount": Number(bidAmount),
-        "users_id": user?.id,
-        "listing_id": Number(id)
+        bid_ammount: Number(bidAmount),
+        users_id: user?.id,
+        listing_id: Number(id),
       }),
     })
 
     if (!response.ok) {
-      throw new Error('Failed to create listing')
+      throw new Error("Failed to create listing")
     }
   }
 
-  const { user, isAuthenticated, hasHydrated } = useUserStore();
-
+  const { user, isAuthenticated, hasHydrated } = useUserStore()
 
   useEffect(() => {
-    if (!hasHydrated) return;
+    if (!hasHydrated) return
 
     if (!isAuthenticated) {
-      router.push("/login/client");
+      router.push("/login/client")
     }
-  }, [hasHydrated, isAuthenticated, user]);
-
+  }, [hasHydrated, isAuthenticated, user])
 
   // Sample related listings
   const relatedListings: RelatedListing[] = [
@@ -174,34 +182,33 @@ export default function ListingDetail({ id }: ListingDetailProps) {
 
   // Fetch listing data
   useEffect(() => {
-    const wsUrl = `ws://localhost:1234/ws?listing_id=${id}`;
-    const socket = new WebSocket(wsUrl);
-    socketRef.current = socket;
+    const wsUrl = `ws://localhost:1234/ws?listing_id=${id}`
+    const socket = new WebSocket(wsUrl)
+    socketRef.current = socket
 
     socket.onmessage = (event) => {
-      const message = event.data;
+      const message = event.data
       try {
-        const data = JSON.parse(event.data);
-    
+        const data = JSON.parse(event.data)
+
         const bid: BidInfo = {
           id: data.id ?? null,
           bid_ammount: data.bid_ammount,
           users_id: data.users_id ?? null,
           listing_id: data.listing_id,
-        };
-    
+        }
+
         setBid(bid)
-    
       } catch (err) {
-        console.error("Failed to parse bid info:", err);
+        console.error("Failed to parse bid info:", err)
       }
-    };
+    }
 
     fetchListing(Number(id))
 
     return () => {
-      socket.close();
-    };
+      socket.close()
+    }
   }, [id])
 
   // Calculate time left until expiration
@@ -221,12 +228,13 @@ export default function ListingDetail({ id }: ListingDetailProps) {
       const days = Math.floor(difference / (1000 * 60 * 60 * 24))
       const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000)
 
-      setTimeLeft(`${days}d ${hours}h ${minutes}m`)
+      setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`)
     }
 
     calculateTimeLeft()
-    const timer = setInterval(calculateTimeLeft, 60000) // Update every minute
+    const timer = setInterval(calculateTimeLeft, 1000) // Update every second instead of every minute
 
     return () => clearInterval(timer)
   }, [listing])
@@ -243,41 +251,54 @@ export default function ListingDetail({ id }: ListingDetailProps) {
     setBidAmount("")
   }
 
-  const handleBuyNow = () => {
-    // Here you would normally send the purchase to your API
-    alert(`Item purchased for $${listing?.buy_now_price}!`)
-    // Redirect to checkout or confirmation page
-    // router.push("/checkout")
+  const handleBuyNow = async () => {
+    try {
+      const res = await fetch("http://localhost:1234/api/v1/buy/", {
+        method: "POST",
+        body: JSON.stringify({
+          listing_id: Number(id),
+          user_id: Number(user?.id),
+        }),
+      })
+
+      if (!res.ok) {
+        throw new Error("Failed to buy listing")
+      }
+
+      router.push("/dashboard")
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   const handleImageError = () => {
     setImageError(true)
   }
 
-  const scrollToImage = (direction: 'next' | 'prev') => {
-    if (!listing?.listing_photos || listing.listing_photos.length <= 1) return;
-    
-    const currentElement = document.querySelector('.image-container:focus-within') || 
-                          document.getElementById(`image-${currentImageIndex}`);
-    
+  const scrollToImage = (direction: "next" | "prev") => {
+    if (!listing?.listing_photos || listing.listing_photos.length <= 1) return
+
+    const currentElement =
+      document.querySelector(".image-container:focus-within") || document.getElementById(`image-${currentImageIndex}`)
+
     if (currentElement) {
-      const allImages = Array.from(document.querySelectorAll('.image-container'));
-      const currentIndex = allImages.indexOf(currentElement as HTMLElement);
-      
-      let targetIndex;
-      if (direction === 'next') {
-        targetIndex = currentIndex < allImages.length - 1 ? currentIndex + 1 : 0;
+      const allImages = Array.from(document.querySelectorAll(".image-container"))
+      const currentIndex = allImages.indexOf(currentElement as HTMLElement)
+
+      let targetIndex
+      if (direction === "next") {
+        targetIndex = currentIndex < allImages.length - 1 ? currentIndex + 1 : 0
       } else {
-        targetIndex = currentIndex > 0 ? currentIndex - 1 : allImages.length - 1;
+        targetIndex = currentIndex > 0 ? currentIndex - 1 : allImages.length - 1
       }
-      
-      const targetElement = allImages[targetIndex];
+
+      const targetElement = allImages[targetIndex]
       if (targetElement) {
-        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setCurrentImageIndex(targetIndex);
+        targetElement.scrollIntoView({ behavior: "smooth", block: "center" })
+        setCurrentImageIndex(targetIndex)
       }
     }
-  };
+  }
 
   if (isLoading) {
     return (
@@ -307,7 +328,6 @@ export default function ListingDetail({ id }: ListingDetailProps) {
       </div>
     )
   }
-
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -412,18 +432,18 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                         e.currentTarget.src = "/placeholder.svg?height=400&width=400"
                       }}
                     />
-                    
+
                     {/* Navigation arrows */}
                     {listing.listing_photos.length > 1 && (
                       <>
-                        <button 
+                        <button
                           onClick={prevImage}
                           className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-md transition-colors"
                           aria-label="Previous image"
                         >
                           <ArrowLeft className="h-5 w-5 text-gray-700" />
                         </button>
-                        <button 
+                        <button
                           onClick={nextImage}
                           className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-md transition-colors"
                           aria-label="Next image"
@@ -432,7 +452,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                         </button>
                       </>
                     )}
-                    
+
                     {/* Image counter */}
                     <div className="absolute bottom-0 left-0 right-0 bg-gray-50/80 py-2 px-3 text-sm text-gray-500 text-center">
                       Image {currentImageIndex + 1} of {listing.listing_photos.length}
@@ -444,7 +464,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                   </div>
                 )}
               </div>
-              
+
               {/* Thumbnails carousel */}
               {listing.listing_photos && listing.listing_photos.length > 1 && (
                 <div className="flex gap-2 overflow-x-auto pb-2">
@@ -453,7 +473,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                       key={photo.id}
                       onClick={() => setCurrentImageIndex(index)}
                       className={`relative min-w-[60px] w-[60px] h-[60px] rounded-md overflow-hidden border-2 transition-colors ${
-                        currentImageIndex === index ? 'border-[#3F3D56]' : 'border-gray-200 hover:border-gray-300'
+                        currentImageIndex === index ? "border-[#3F3D56]" : "border-gray-200 hover:border-gray-300"
                       }`}
                     >
                       <img
@@ -498,12 +518,12 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                 <h2 className="text-lg font-medium text-gray-900 mb-2">Seller Information</h2>
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-[#3F3D56] flex items-center justify-center text-white">
-                  <span className="font-medium text-sm">
-                  {listing.seller.name
-                    ?.split(' ')
-                    .map(n => n[0])
-                    .join('')}
-                </span>
+                    <span className="font-medium text-sm">
+                      {listing.seller.name
+                        ?.split(" ")
+                        .map((n) => n[0])
+                        .join("")}
+                    </span>
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">{listing.seller.name}</p>
@@ -522,9 +542,9 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                     <p className="text-lg font-medium text-gray-900">${bid?.bid_ammount.toFixed(2)}</p>
                   </div>
                   <div>
-                  <p className={`text-md ${bid?.users_id == user?.id ? 'text-green-600' : 'text-red-600'}`}>
-                    {bid?.users_id == user?.id ? 'You are Winning !' : 'You NOT Winning'}
-                  </p>
+                    <p className={`text-md ${bid?.users_id == user?.id ? "text-green-600" : "text-red-600"}`}>
+                      {bid?.users_id == user?.id ? "You are Winning !" : "You NOT Winning"}
+                    </p>
                   </div>
                 </div>
 
@@ -546,7 +566,9 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                     <button
                       type="submit"
                       className="bg-[#3F3D56] hover:bg-[#2d2b40] text-white px-4 py-2 rounded-md transition-colors"
-                      onClick={() => {handlePlaceBid()}}
+                      onClick={() => {
+                        handlePlaceBid()
+                      }}
                     >
                       Place Bid
                     </button>

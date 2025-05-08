@@ -103,7 +103,7 @@ export default function Marketplace() {
 
       const myAuctionsArr: Listing[] = []
 
-      if (listings) {
+      if (listings && listings.length > 0) {
         data.forEach((listing: Listing) => {
           console.log(listing.id)
           if (user?.id == listing.seller.id) {
