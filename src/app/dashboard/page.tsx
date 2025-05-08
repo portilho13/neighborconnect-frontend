@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import {
   Search,
-  Bell,
+  ShoppingBag,
   Menu,
   ChevronLeft,
   ChevronRight,
@@ -12,11 +12,12 @@ import {
   CreditCard,
   HomeIcon,
   Calendar,
-  ShoppingBag,
+  ShoppingBagIcon,
   User,
   Check,
   AlertCircle,
   X,
+  Clock,
 } from "lucide-react"
 
 import useUserStore from "../../../lib/userStore"
@@ -66,6 +67,30 @@ export default function Dashboard() {
   const [discountCode, setDiscountCode] = useState("")
   const [discountCodeError, setDiscountCodeError] = useState("")
   const [discountCodeSuccess, setDiscountCodeSuccess] = useState("")
+  const [cartOpen, setCartOpen] = useState(false)
+  const [pendingTransactions, setPendingTransactions] = useState([
+    {
+      id: 1,
+      name: "Vintage Camera",
+      price: 120,
+      timeLeft: "23:45:12",
+      selected: false,
+    },
+    {
+      id: 2,
+      name: "Antique Watch",
+      price: 250,
+      timeLeft: "11:30:05",
+      selected: false,
+    },
+    {
+      id: 3,
+      name: "Collectible Coins",
+      price: 75,
+      timeLeft: "05:15:30",
+      selected: false,
+    },
+  ])
 
   const { user, isAuthenticated, hasHydrated } = useUserStore()
 
@@ -111,12 +136,12 @@ export default function Dashboard() {
     }
 
     try {
-        const res = await fetch("http://localhost:1234/api/v1/event/reward", {
-          method: "POST",
-          body: JSON.stringify({
-            "code": discountCode,
-            "user_id": user?.id
-          })
+      const res = await fetch("http://localhost:1234/api/v1/event/reward", {
+        method: "POST",
+        body: JSON.stringify({
+          code: discountCode,
+          user_id: user?.id,
+        }),
       })
 
       if (!res.ok) {
@@ -124,11 +149,9 @@ export default function Dashboard() {
       } else {
         setDiscountCodeSuccess("Discount code applied successfully!")
       }
-      
     } catch (error) {
       console.log(error)
     }
-
 
     setTimeout(() => {
       setDiscountCodePopupOpen(false)
@@ -182,6 +205,21 @@ export default function Dashboard() {
     if (hour < 18) return "Good Afternoon"
     return "Good Evening"
   }
+
+  const toggleTransactionSelection = (id: number) => {
+    setPendingTransactions(
+      pendingTransactions.map((transaction) =>
+        transaction.id === id ? { ...transaction, selected: !transaction.selected } : transaction,
+      ),
+    )
+  }
+
+  const calculateTotal = () => {
+    return pendingTransactions
+      .filter((transaction) => transaction.selected)
+      .reduce((total, transaction) => total + transaction.price, 0)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -215,10 +253,62 @@ export default function Dashboard() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             </div>
 
-            <button className="relative p-2 rounded-full hover:bg-gray-100 transition-colors">
-              <Bell className="h-5 w-5 text-gray-600" />
+            <button
+              className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
+              onClick={() => setCartOpen(!cartOpen)}
+            >
+              <ShoppingBagIcon className="h-5 w-5 text-gray-600" />
               <span className="absolute top-1 right-1 bg-[#3F3D56] rounded-full w-2 h-2"></span>
             </button>
+            {cartOpen && (
+              <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-20 top-full">
+                <div className="p-4 border-b border-gray-100">
+                  <h3 className="font-medium text-gray-900">Pending Transactions</h3>
+                  <p className="text-xs text-gray-500 mt-1">Select items to checkout</p>
+                </div>
+
+                {pendingTransactions.length > 0 ? (
+                  <>
+                    <div className="max-h-80 overflow-y-auto">
+                      {pendingTransactions.map((transaction) => (
+                        <div key={transaction.id} className="p-3 border-b border-gray-100 flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={transaction.selected}
+                            onChange={() => toggleTransactionSelection(transaction.id)}
+                            className="h-4 w-4 text-[#3F3D56] rounded border-gray-300 focus:ring-[#3F3D56] mr-3"
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900">{transaction.name}</p>
+                            <p className="text-sm text-gray-600">${transaction.price}</p>
+                          </div>
+                          <div className="text-xs text-red-500 flex items-center">
+                            <Clock className="h-3 w-3 mr-1" />
+                            {transaction.timeLeft}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="p-4">
+                      <div className="flex justify-between mb-3">
+                        <span className="text-sm text-gray-600">Total:</span>
+                        <span className="text-sm font-medium">${calculateTotal()}</span>
+                      </div>
+                      <button
+                        className="w-full bg-[#3F3D56] hover:bg-[#2d2b40] text-white py-2 rounded-md text-sm font-medium transition-colors"
+                        disabled={!pendingTransactions.some((t) => t.selected)}
+                      >
+                        Checkout
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="p-4 text-center text-gray-500">
+                    <p>No pending transactions</p>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="hidden md:flex items-center gap-3">
               <div className="h-8 w-8 rounded-full bg-[#3F3D56] flex items-center justify-center text-white">
