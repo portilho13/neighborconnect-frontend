@@ -616,6 +616,7 @@ export default function Dashboard() {
                     Add Discount Code
                   </button>
                   <button
+                    onClick={() => {if (currentRent.status !== "paid") router.push(`/checkout/rent?id=${currentRent.id}`) }}
                     className={`flex items-center justify-center gap-2 rounded-lg py-3 font-medium ${
                       currentRent.status === "paid"
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
@@ -752,7 +753,7 @@ export default function Dashboard() {
                 <h3 className="text-3xl font-bold text-gray-900">{accountDetail?.balance} {accountDetail?.currency}</h3>
               </div>
               <div className="flex items-center gap-4">
-                <button className="bg-[#3F3D56] hover:bg-[#2d2b40] text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                <button onClick={()=> {router.push("/checkout/funds")}} className="bg-[#3F3D56] hover:bg-[#2d2b40] text-white px-4 py-2 rounded-lg font-medium transition-colors">
                   Add Funds
                 </button>
                 <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors">

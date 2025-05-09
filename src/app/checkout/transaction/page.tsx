@@ -5,7 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, ShoppingBag, CreditCard, Clock } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
-import useUserStore from "../../../lib/userStore"
+import useUserStore from "../../../../lib/userStore"
 
 
 interface CartItem {

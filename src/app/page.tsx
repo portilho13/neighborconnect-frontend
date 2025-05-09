@@ -47,7 +47,7 @@ export default function Home() {
                 Sign Up
               </button>
               <Link
-                href="#"
+                href="/login/client"
                 className="inline-flex items-center justify-center text-white hover:text-[#4987FF] transition-colors px-4 py-2"
               >
                 Already have an account? <span className="ml-1 underline">Login</span>
