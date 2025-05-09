@@ -36,6 +36,14 @@ interface Rent {
   due_day: number
 }
 
+interface AccountDetail {
+  id: number
+  account_number: number
+  balance: string
+  currency: string
+  user_id: number
+}
+
 interface BidInfo {
   id: number | null
   bid_ammount: number
@@ -85,7 +93,15 @@ interface TransactionJson {
   listing: Listing
   payment_status: string
   payment_due_time: Date
-  selected?: boolean
+  selected?: boolean // Added selected property
+}
+
+interface AccountMovement {
+  id: number
+  amount: number
+  created_at: Date
+  account_id: number
+  type: string
 }
 
 const months = [
@@ -121,13 +137,14 @@ export default function Dashboard() {
   const [discountCodeSuccess, setDiscountCodeSuccess] = useState("")
   const [cartOpen, setCartOpen] = useState(false)
   const [pendingTransactions, setPendingTransactions] = useState<TransactionJson[]>([])
-  const [timeLeftMap, setTimeLeftMap] = useState<Record<string, string>>({});
+  const [accountDetail, setAccountDetail] = useState<AccountDetail>()
 
+  // Add this state after the other state declarations
+  const [accountMovements, setAccountMovements] = useState<AccountMovement[]>()
 
   const { user, isAuthenticated, hasHydrated } = useUserStore()
 
   const router = useRouter()
-
 
   const fetchRent = async (apartment_id: number) => {
     setIsLoading(true)
@@ -136,7 +153,7 @@ export default function Dashboard() {
 
       if (!res.ok) {
         const errorMessage = await res.text()
-        throw new Error(errorMessage || "Failed to fetch rent")
+        throw new Error(errorMessage || "Failed to register")
       }
 
       const data: Rent[] = await res.json()
@@ -149,12 +166,41 @@ export default function Dashboard() {
     }
   }
 
-  const handleCheckout = () => {
-    const transaction_ids: number[] = pendingTransactions
-    .filter((transaction) => transaction.selected)
-    .map((transaction) => transaction.id);
-    router.push(`/checkout?ids=${JSON.stringify(transaction_ids)}`);
+
+  const fetchAccount = async () => {
+    try {
+      const res = await fetch(`http://localhost:1234/api/v1/account?user_id=${user?.id.toString()}`)
+      if (!res.ok) {
+        const errorMessage = await res.text()
+        throw new Error(errorMessage || "Failed to fetch transactoions")
+      }
+
+      const data: AccountDetail = await res.json()
+
+
+      setAccountDetail(data)
+    } catch (error) {
+      console.error(error)
+    }
   }
+
+  const fetchAccountMovement = async () => {
+    try {
+      const res = await fetch(`http://localhost:1234/api/v1/account/movement?user_id=${user?.id.toString()}`)
+      if (!res.ok) {
+        const errorMessage = await res.text()
+        throw new Error(errorMessage || "Failed to fetch transactoions")
+      }
+
+      const data: AccountMovement[] = await res.json()
+
+
+      setAccountMovements(data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
 
   const fetchPendingTransactions = async () => {
     try {
@@ -173,41 +219,6 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
-    const updateTimes = () => {
-      const newMap: Record<string, string> = {};
-  
-      pendingTransactions.forEach((transaction) => {
-        const due = new Date(transaction.payment_due_time);
-        const now = new Date();
-        const diffMs = due.getTime() - now.getTime();
-  
-        if (diffMs <= 0) {
-          newMap[transaction.id] = "Expired";
-          return;
-        }
-  
-        const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-  
-        let str = "";
-        if (days > 0) str += `${days}d `;
-        str += `${hours}h ${minutes.toString().padStart(2, "0")}m ${seconds.toString().padStart(2, "0")}s`;
-  
-        newMap[transaction.id] = str;
-      });
-  
-      setTimeLeftMap(newMap);
-    };
-  
-    updateTimes();
-    const timer = setInterval(updateTimes, 1000);
-    return () => clearInterval(timer);
-  }, [pendingTransactions]);
-  
-
-  useEffect(() => {
     if (!hasHydrated) return
 
     if (!isAuthenticated) {
@@ -215,6 +226,8 @@ export default function Dashboard() {
     } else if (user?.apartmentId) {
       fetchRent(user.apartmentId)
       fetchPendingTransactions()
+      fetchAccount()
+      fetchAccountMovement()
     }
   }, [hasHydrated, isAuthenticated, user])
 
@@ -402,7 +415,7 @@ export default function Dashboard() {
                           </div>
                           <div className="text-xs text-red-500 flex items-center">
                             <Clock className="h-3 w-3 mr-1" />
-                            {timeLeftMap[transaction.id] || ""}
+                            {getTimeLeft(transaction.payment_due_time)}
                           </div>
                         </div>
                       ))}
@@ -415,7 +428,6 @@ export default function Dashboard() {
                       <button
                         className="w-full bg-[#3F3D56] hover:bg-[#2d2b40] text-white py-2 rounded-md text-sm font-medium transition-colors"
                         disabled={!pendingTransactions.some((t) => t.selected)}
-                        onClick={() => handleCheckout()}
                       >
                         Checkout
                       </button>
@@ -734,10 +746,10 @@ export default function Dashboard() {
         <div className="mt-8">
           <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Wallet</h2>
-            <div className="flex flex-col md:flex-row justify-between gap-6">
+            <div className="flex flex-col md:flex-row justify-between gap-6 mb-6">
               <div className="flex-1">
                 <p className="text-gray-600 mb-2">Current Balance</p>
-                <h3 className="text-3xl font-bold text-gray-900">100 USD</h3>
+                <h3 className="text-3xl font-bold text-gray-900">{accountDetail?.balance} {accountDetail?.currency}</h3>
               </div>
               <div className="flex items-center gap-4">
                 <button className="bg-[#3F3D56] hover:bg-[#2d2b40] text-white px-4 py-2 rounded-lg font-medium transition-colors">
@@ -746,6 +758,56 @@ export default function Dashboard() {
                 <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors">
                   Withdraw
                 </button>
+              </div>
+            </div>
+
+            {/* Account Movements Table */}
+            <div className="mt-4">
+              <h3 className="text-md font-medium text-gray-900 mb-3">Recent Movements</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Date
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Description
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
+                        Amount
+                      </th>
+                    </tr>
+                  </thead>
+                  {accountMovements && accountMovements.length > 0 && (
+                    <tbody className="bg-white divide-y divide-gray-200">
+                    {accountMovements.map((movement) => (
+                      <tr key={movement.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(movement.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{movement.type.charAt(0).toUpperCase() + movement.type.slice(1)}</td>
+                        <td
+                          className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${
+                            movement.type === "deposit" ? "text-green-600" : "text-red-600"
+                          }`}
+                        >
+                          {movement.type === "deposit" ? "+" : "-"}${movement.amount.toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  )}
+                </table>
               </div>
             </div>
           </div>
