@@ -1,24 +1,19 @@
 "use client"
 
 import React from "react"
-
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowLeft, Upload, X, Calendar, Clock, Info, Check } from "lucide-react"
+import { ArrowLeft, Upload, X, Calendar, Clock, Info, Check, MapPin, Users } from "lucide-react"
 import { format, set } from "date-fns"
 import { DayPicker } from "react-day-picker"
 import * as LabelPrimitive from "@radix-ui/react-label"
-import * as SelectPrimitive from "@radix-ui/react-select"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 import * as ToastPrimitive from "@radix-ui/react-toast"
 import { cva } from "class-variance-authority"
-import { cn } from "../../../../lib/utils"
-import useUserStore from "../../../../lib/userStore"
-
-
-
+import { cn } from "../../../../../../lib/utils"
+import useUserStore from "../../../../../../lib/userStore"
 
 // Toast components
 const ToastProvider = ToastPrimitive.Provider
@@ -182,98 +177,6 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttribu
 )
 Textarea.displayName = "Textarea"
 
-// Select components
-const Select = SelectPrimitive.Root
-const SelectTrigger = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "flex h-10 w-full items-center justify-between rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#3F3D56] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-      className,
-    )}
-    {...props}
-  >
-    {children}
-    <SelectPrimitive.Icon asChild>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="h-4 w-4 opacity-50"
-      >
-        <path d="m6 9 6 6 6-6" />
-      </svg>
-    </SelectPrimitive.Icon>
-  </SelectPrimitive.Trigger>
-))
-SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
-
-const SelectValue = SelectPrimitive.Value
-const SelectContent = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, position = "popper", ...props }, ref) => (
-  <SelectPrimitive.Portal>
-    <SelectPrimitive.Content
-      ref={ref}
-      className={cn(
-        "relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-white text-gray-900 shadow-md animate-in fade-in-80",
-        position === "popper" && "translate-y-1",
-        className,
-      )}
-      position={position}
-      {...props}
-    >
-      <SelectPrimitive.Viewport className="p-1">{children}</SelectPrimitive.Viewport>
-    </SelectPrimitive.Content>
-  </SelectPrimitive.Portal>
-))
-SelectContent.displayName = SelectPrimitive.Content.displayName
-
-const SelectItem = React.forwardRef<
-  React.ElementRef<typeof SelectPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Item
-    ref={ref}
-    className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-gray-100 focus:text-gray-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className,
-    )}
-    {...props}
-  >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-      <SelectPrimitive.ItemIndicator>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="h-4 w-4"
-        >
-          <path d="M5 12l5 5 9-9" />
-        </svg>
-      </SelectPrimitive.ItemIndicator>
-    </span>
-    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
-  </SelectPrimitive.Item>
-))
-SelectItem.displayName = SelectPrimitive.Item.displayName
-
 // Popover components
 const Popover = PopoverPrimitive.Root
 const PopoverTrigger = PopoverPrimitive.Trigger
@@ -321,100 +224,114 @@ const FormField = ({
   )
 }
 
-interface Category {
+interface Event {
   id: number
   name: string
-  url: string
+  percentage: number
+  capacity: number
+  date_time: string
+  manager_id: number
+  event_image: string
+  duration: number
+  local: string
+  current_ocupation: number
 }
 
-export default function CreateListing() {
+export default function CreateEvent() {
   const router = useRouter()
   const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [startPrice, setStartPrice] = useState("")
-  const [buyNowPrice, setBuyNowPrice] = useState("")
-  const [categories, setCategories] = useState<Category[]>([])
-  const [categoryId, setCategoryId] = useState<string>();
-  const [endDate, setEndDate] = useState<Date>()
-  const [endTime, setEndTime] = useState<string>("12:00")
-  const [images, setImages] = useState<File[]>([])
+  const [capacity, setCapacity] = useState("")
+  const [local, setLocal] = useState("")
+  const [duration, setDuration] = useState("")
+  const [eventDate, setEventDate] = useState<Date>()
+  const [eventTime, setEventTime] = useState<string>("18:00")
+  const [eventImage, setEventImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showToast, setShowToast] = useState(false)
   const [toastMessage, setToastMessage] = useState({ title: "", description: "", type: "success" })
-  const [previews, setPreviews] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [percentage, setPercentage] = useState<number>(0)
 
-  const { user, isAuthenticated, hasHydrated } = useUserStore();
+  const { user, isAuthenticated, hasHydrated } = useUserStore()
 
   // Clear errors when fields are updated
   useEffect(() => {
     const newErrors = { ...errors }
     if (name) delete newErrors.name
-    if (description) delete newErrors.description
-    if (startPrice) delete newErrors.startPrice
-    if (buyNowPrice) delete newErrors.buyNowPrice
-    if (categoryId) delete newErrors.category
-    if (endDate) delete newErrors.endDate
-    if (images.length >= 4) delete newErrors.images
+    if (capacity) delete newErrors.capacity
+    if (local) delete newErrors.local
+    if (duration) delete newErrors.duration
+    if (eventDate) delete newErrors.eventDate
+    if (eventImage) delete newErrors.eventImage
     setErrors(newErrors)
+  }, [name, capacity, local, duration, eventDate, eventImage]) // Removed 'errors' from dependencies
+
+  // Add a separate useEffect for fetchCategories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        // In a real app, this would be an API call
+        // const res = await fetch("http://localhost:1234/api/v1/category")
+        // if (!res.ok) {
+        //   const errorMessage = await res.text()
+        //   throw new Error(errorMessage || "Failed to fetch categories")
+        // }
+        // setCategories(await res.json())
+
+        // For now, we'll just simulate it
+        console.log("Categories would be fetched here")
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
     fetchCategories()
-  }, [user, name, description, startPrice, buyNowPrice, categoryId, endDate, images])
+  }, [])
+
+  // Check authentication
+  useEffect(() => {
+    if (!hasHydrated) return
+
+    if (!isAuthenticated) {
+      router.push("/login")
+    }
+  }, [hasHydrated, isAuthenticated, router])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const filesArray = Array.from(e.target.files)
-      const previewUrls = filesArray.map((file) => URL.createObjectURL(file))
-  
-      setImages((prev) => [...prev, ...filesArray])
-      setPreviews((prev) => [...prev, ...previewUrls])
+      const file = e.target.files[0]
+      setEventImage(file)
+      setImagePreview(URL.createObjectURL(file))
     }
   }
-  
-  
 
-  const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index))
+  const removeImage = () => {
+    setEventImage(null)
+    setImagePreview("")
   }
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!name.trim()) newErrors.name = "Listing name is required"
-    if (!description.trim()) newErrors.description = "Description is required"
-    if (!startPrice) newErrors.startPrice = "Starting price is required"
-    if (!buyNowPrice) newErrors.buyNowPrice = "Buy now price is required"
-    if (!categoryId) newErrors.category = "Category is required"
-    if (!endDate) newErrors.endDate = "End date is required"
-    if (images.length < 1) newErrors.images = "Please upload at least 4 images"
+    if (!name.trim()) newErrors.name = "Event name is required"
+    if (!capacity) newErrors.capacity = "Capacity is required"
+    if (!local.trim()) newErrors.local = "Location is required"
+    if (!duration) newErrors.duration = "Duration is required"
+    if (!eventDate) newErrors.eventDate = "Event date is required"
+    if (!eventImage) newErrors.eventImage = "Event image is required"
 
-    if (Number(startPrice) <= 0) newErrors.startPrice = "Starting price must be greater than 0"
-    if (Number(buyNowPrice) <= 0) newErrors.buyNowPrice = "Buy now price must be greater than 0"
-    if (Number(buyNowPrice) <= Number(startPrice)) {
-      newErrors.buyNowPrice = "Buy now price must be greater than starting price"
-    }
+    if (Number(capacity) <= 0) newErrors.capacity = "Capacity must be greater than 0"
+    if (Number(duration) <= 0) newErrors.duration = "Duration must be greater than 0"
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch("http://localhost:1234/api/v1/category")
-      if (!res.ok) {
-        const errorMessage = await res.text()
-        throw new Error(errorMessage || "Failed to register")
-      }
-
-      setCategories(await res.json())
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-  
+
     if (!validateForm()) {
       setToastMessage({
         title: "Validation Error",
@@ -424,54 +341,56 @@ export default function CreateListing() {
       setShowToast(true)
       return
     }
-  
+
     setIsSubmitting(true)
-  
+
     try {
-      const [hours, minutes] = endTime.split(":").map(Number)
-      const combinedEndDateTime = endDate ? set(endDate, { hours, minutes }) : undefined
-  
-      const listingData = {
+      const [hours, minutes] = eventTime.split(":").map(Number)
+      const combinedDateTime = eventDate ? set(eventDate, { hours, minutes }) : undefined
+
+      const eventData = {
         name: name,
-        description: description,
-        buy_now_price: parseFloat(buyNowPrice).toString(),
-        start_price: parseFloat(startPrice).toString(),
-        expiration_date: combinedEndDateTime?.toISOString(),
-        seller_id: user?.id.toString(),
-        category_id: categoryId,
-      }
-  
+        percentage: percentage / 100,
+        capacity: Number.parseInt(capacity),
+        date_time: combinedDateTime?.toISOString(),
+        manager_id: user?.id,
+        duration: Number.parseInt(duration) * 1e9,
+        local: local   
+    }
+
       const formData = new FormData()
-      formData.append('listing', JSON.stringify(listingData))
-  
-      images.forEach((file) => {
-        formData.append('images', file)
-      })
-  
-      const response = await fetch('http://localhost:1234/api/v1/listing/', {
+      formData.append("event", JSON.stringify(eventData))
+
+      if (eventImage) {
+        formData.append("images", eventImage)
+      }
+
+      // In a real app, this would be an API call
+      const res = await fetch('http://localhost:1234/api/v1/event', {
         method: 'POST',
         body: formData,
       })
-  
-      if (!response.ok) {
-        throw new Error('Failed to create listing')
-      }
-  
+
+      if (!res.ok) {
+        const errorMessage = await res.text();
+        throw new Error(errorMessage || 'Failed to register');
+    }
+
       setToastMessage({
         title: "Success!",
-        description: "Your listing has been created successfully",
+        description: "Your event has been created successfully",
         type: "success",
       })
       setShowToast(true)
-  
+
       setTimeout(() => {
-        router.push("/marketplace")
+        router.push("/events")
       }, 2000)
     } catch (error) {
-      console.error("Error creating listing:", error)
+      console.error("Error creating event:", error)
       setToastMessage({
         title: "Error",
-        description: "Failed to create listing. Please try again.",
+        description: "Failed to create event. Please try again.",
         type: "error",
       })
       setShowToast(true)
@@ -479,7 +398,6 @@ export default function CreateListing() {
       setIsSubmitting(false)
     }
   }
-  
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 text-black">
@@ -488,114 +406,116 @@ export default function CreateListing() {
           <div className="max-w-3xl mx-auto">
             <div className="mb-6">
               <Link
-                href="/marketplace"
+                href="/events"
                 className="inline-flex items-center text-[#3F3D56] hover:text-[#2d2b40] transition-colors"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Marketplace
+                Back to Events
               </Link>
             </div>
 
             <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 md:p-8">
               <div className="flex items-center justify-between mb-8">
-                <h1 className="text-2xl font-bold text-gray-900">Create New Listing</h1>
-                <div className="bg-[#3F3D56]/10 text-[#3F3D56] text-sm font-medium px-3 py-1 rounded-full">Auction</div>
+                <h1 className="text-2xl font-bold text-gray-900">Create New Event</h1>
+                <div className="bg-[#3F3D56]/10 text-[#3F3D56] text-sm font-medium px-3 py-1 rounded-full">
+                  Community Event
+                </div>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Basic Information Section */}
                 <div className="space-y-6">
                   <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
-                    <h2 className="text-lg font-semibold text-gray-900">Basic Information</h2>
+                    <h2 className="text-lg font-semibold text-gray-900">Event Information</h2>
                     <div className="h-1 w-1 rounded-full bg-gray-300"></div>
                     <span className="text-sm text-gray-500">Step 1 of 3</span>
                   </div>
 
-                  {/* Listing Name */}
-                  <FormField label="Listing Name" htmlFor="name" error={errors.name}>
+                  {/* Event Name */}
+                  <FormField label="Event Name" htmlFor="name" error={errors.name}>
                     <Input
                       id="name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Enter a descriptive title for your listing"
+                      placeholder="Enter a name for your event"
                       className={errors.name ? "border-red-300" : ""}
                     />
                   </FormField>
 
-                  {/* Description */}
-                  <FormField label="Description" htmlFor="description" error={errors.description}>
-                    <Textarea
-                      id="description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      className={cn("min-h-[120px]", errors.description ? "border-red-300" : "")}
-                      placeholder="Provide a detailed description of your item including condition, features, and any other relevant information"
-                    />
+                  {/* Location */}
+                  <FormField label="Location" htmlFor="local" error={errors.local}>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                      <Input
+                        id="local"
+                        value={local}
+                        onChange={(e) => setLocal(e.target.value)}
+                        placeholder="Enter the event location"
+                        className={cn("pl-10", errors.local ? "border-red-300" : "")}
+                      />
+                    </div>
                   </FormField>
-
-                  {/* Category */}
-                  <FormField label="Category" htmlFor="category" error={errors.category}>
-                    <Select value={categoryId} onValueChange={setCategoryId}>
-                      <SelectTrigger id="category" className={errors.category ? "border-red-300" : ""}>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.id.toString()}>
-                            {cat.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                                    {/* Location */}
+                    <FormField label="Percentage" htmlFor="local" error={errors.local}>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                      <Input
+                        id="percentage"
+                        value={percentage}
+                        onChange={(e) => setPercentage(Number(e.target.value))}
+                        placeholder="Enter the event percentage"
+                        className={cn("pl-10", errors.local ? "border-red-300" : "")}
+                      />
+                    </div>
                   </FormField>
                 </div>
 
-                {/* Pricing Section */}
+                {/* Capacity & Duration Section */}
                 <div className="space-y-6">
                   <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
-                    <h2 className="text-lg font-semibold text-gray-900">Pricing & Duration</h2>
+                    <h2 className="text-lg font-semibold text-gray-900">Capacity & Schedule</h2>
                     <div className="h-1 w-1 rounded-full bg-gray-300"></div>
                     <span className="text-sm text-gray-500">Step 2 of 3</span>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Starting Price */}
-                    <FormField label="Starting Price ($)" htmlFor="startPrice" error={errors.startPrice}>
+                    {/* Capacity */}
+                    <FormField label="Capacity" htmlFor="capacity" error={errors.capacity}>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                        <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
                         <Input
-                          id="startPrice"
+                          id="capacity"
                           type="number"
-                          min="0.01"
-                          step="0.01"
-                          value={startPrice}
-                          onChange={(e) => setStartPrice(e.target.value)}
-                          className={cn("pl-8", errors.startPrice ? "border-red-300" : "")}
-                          placeholder="0.00"
+                          min="1"
+                          step="1"
+                          value={capacity}
+                          onChange={(e) => setCapacity(e.target.value)}
+                          placeholder="Maximum number of attendees"
+                          className={cn("pl-10", errors.capacity ? "border-red-300" : "")}
                         />
                       </div>
                     </FormField>
 
-                    {/* Buy Now Price */}
-                    <FormField label="Buy Now Price ($)" htmlFor="buyNowPrice" error={errors.buyNowPrice}>
+                    {/* Duration (in minutes) */}
+                    <FormField label="Duration (minutes)" htmlFor="duration" error={errors.duration}>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                        <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
                         <Input
-                          id="buyNowPrice"
+                          id="duration"
                           type="number"
-                          min="0.01"
-                          step="0.01"
-                          value={buyNowPrice}
-                          onChange={(e) => setBuyNowPrice(e.target.value)}
-                          className={cn("pl-8", errors.buyNowPrice ? "border-red-300" : "")}
-                          placeholder="0.00"
+                          min="15"
+                          step="15"
+                          value={duration}
+                          onChange={(e) => setDuration(e.target.value)}
+                          placeholder="Event duration in minutes"
+                          className={cn("pl-10", errors.duration ? "border-red-300" : "")}
                         />
                       </div>
                     </FormField>
                   </div>
 
-                  {/* End Date & Time */}
-                  <FormField label="Auction End Date & Time" htmlFor="endDate" error={errors.endDate}>
+                  {/* Event Date & Time */}
+                  <FormField label="Event Date & Time" htmlFor="eventDate" error={errors.eventDate}>
                     <div className="flex flex-col sm:flex-row gap-4">
                       <div className="flex-1">
                         <Popover>
@@ -604,20 +524,20 @@ export default function CreateListing() {
                               variant="outline"
                               className={cn(
                                 "w-full justify-start text-left font-normal",
-                                !endDate && "text-gray-400",
-                                errors.endDate && "border-red-300",
+                                !eventDate && "text-gray-400",
+                                errors.eventDate && "border-red-300",
                               )}
-                              id="endDate"
+                              id="eventDate"
                             >
                               <Calendar className="mr-2 h-4 w-4" />
-                              {endDate ? format(endDate, "PPP") : "Select end date"}
+                              {eventDate ? format(eventDate, "PPP") : "Select event date"}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0">
                             <DayPicker
                               mode="single"
-                              selected={endDate}
-                              onSelect={setEndDate}
+                              selected={eventDate}
+                              onSelect={setEventDate}
                               initialFocus
                               disabled={(date) => date < new Date()}
                               className="border-none"
@@ -629,8 +549,8 @@ export default function CreateListing() {
                         <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
                         <Input
                           type="time"
-                          value={endTime}
-                          onChange={(e) => setEndTime(e.target.value)}
+                          value={eventTime}
+                          onChange={(e) => setEventTime(e.target.value)}
                           className="pl-10"
                         />
                       </div>
@@ -640,91 +560,68 @@ export default function CreateListing() {
                   <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 flex gap-3">
                     <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm text-blue-800 font-medium">Auction Duration</p>
+                      <p className="text-sm text-blue-800 font-medium">Event Schedule</p>
                       <p className="text-sm text-blue-600 mt-1">
-                        Your auction will start immediately after creation and end at the specified date and time. We
-                        recommend setting the duration between 3-7 days for optimal bidding activity.
+                        Choose a date and time that works best for your community. Make sure to give people enough
+                        notice to plan ahead. The event will be visible to all residents immediately after creation.
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Images Section */}
+                {/* Event Image Section */}
                 <div className="space-y-6">
                   <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
-                    <h2 className="text-lg font-semibold text-gray-900">Images</h2>
+                    <h2 className="text-lg font-semibold text-gray-900">Event Image</h2>
                     <div className="h-1 w-1 rounded-full bg-gray-300"></div>
                     <span className="text-sm text-gray-500">Step 3 of 3</span>
                   </div>
 
-                  <FormField label="Listing Images" error={errors.images}>
+                  <FormField label="Event Cover Image" error={errors.eventImage}>
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                        {previews.map((image, index) => (
-                          <div
-                            key={index}
-                            className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 bg-white shadow-sm group"
-                          >
+                      <div className="flex flex-col items-center">
+                        {imagePreview ? (
+                          <div className="relative w-full max-w-md aspect-video rounded-lg overflow-hidden border border-gray-200 bg-white shadow-sm mb-4">
                             <Image
-                              src={image || "/placeholder.svg"}
-                              alt={`Listing image ${index + 1}`}
+                              src={imagePreview || "/placeholder.svg"}
+                              alt="Event cover"
                               fill
                               className="object-cover"
                             />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                              <button
-                                type="button"
-                                onClick={() => removeImage(index)}
-                                className="bg-white/90 backdrop-blur-sm p-2 rounded-full hover:bg-white transition-colors"
-                              >
-                                <X className="h-4 w-4 text-gray-700" />
-                                <span className="sr-only">Remove image</span>
-                              </button>
-                            </div>
-                            <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md">
-                              Image {index + 1}
-                            </div>
+                            <button
+                              type="button"
+                              onClick={removeImage}
+                              className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm p-2 rounded-full hover:bg-white transition-colors"
+                            >
+                              <X className="h-4 w-4 text-gray-700" />
+                              <span className="sr-only">Remove image</span>
+                            </button>
                           </div>
-                        ))}
-
-                        {images.length < 8 && (
+                        ) : (
                           <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="aspect-square flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 hover:border-[#3F3D56] hover:bg-gray-100 transition-colors"
+                            className="w-full max-w-md aspect-video flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 hover:border-[#3F3D56] hover:bg-gray-100 transition-colors mb-4"
                           >
                             <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                            <span className="text-sm font-medium text-gray-600">Upload Image</span>
+                            <span className="text-sm font-medium text-gray-600">Upload Event Image</span>
                             <span className="text-xs text-gray-500 mt-1 text-center">
-                              {images.length === 0 ? "Add at least 4 images" : "Add more images"}
+                              Choose an attractive image for your event
                             </span>
-                            <input
-                              ref={fileInputRef}
-                              type="file"
-                              accept="image/*"
-                              multiple
-                              onChange={handleImageUpload}
-                              className="hidden"
-                            />
                           </button>
                         )}
-                      </div>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                        />
 
-                      <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
-                        <Info className="h-4 w-4" />
-                        <span>Upload at least 4 high-quality images. First image will be the cover.</span>
-                      </div>
-
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {Array.from({ length: 4 }).map((_, index) => (
-                          <div
-                            key={index}
-                            className={cn(
-                              "w-6 h-1 rounded-full",
-                              index < images.length ? "bg-[#3F3D56]" : "bg-gray-200",
-                            )}
-                          />
-                        ))}
+                        <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                          <Info className="h-4 w-4" />
+                          <span>Upload a high-quality image to attract more participants.</span>
+                        </div>
                       </div>
                     </div>
                   </FormField>
@@ -734,7 +631,7 @@ export default function CreateListing() {
                 <div className="pt-4 border-t border-gray-100">
                   <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
                     <div className="flex items-center gap-2 text-sm text-gray-600">
-                      {images.length >= 4 && name && description && startPrice && buyNowPrice && categoryId && endDate ? (
+                      {name && local && capacity && duration && eventDate && eventImage ? (
                         <>
                           <Check className="h-5 w-5 text-green-500" />
                           <span>All required fields completed</span>
@@ -772,7 +669,7 @@ export default function CreateListing() {
                           Creating...
                         </>
                       ) : (
-                        "Create Listing"
+                        "Create Event"
                       )}
                     </Button>
                   </div>

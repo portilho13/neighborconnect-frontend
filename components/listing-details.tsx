@@ -563,24 +563,35 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                         required
                       />
                     </div>
+                    {listing?.seller.id !== user?.id ? (
                     <button
                       type="submit"
                       className="bg-[#3F3D56] hover:bg-[#2d2b40] text-white px-4 py-2 rounded-md transition-colors"
-                      onClick={() => {
-                        handlePlaceBid()
-                      }}
+                      onClick={handlePlaceBid}
                     >
                       Place Bid
                     </button>
+                  ) : (
+                    <div className="px-4 py-2 rounded-md border border-gray-300 text-gray-500 text-center">
+                      You're the Seller
+                    </div>
+                  )}
+
                   </div>
                 </form>
-
+                {listing?.seller.id !== user?.id ? (
                 <button
                   onClick={handleBuyNow}
                   className="w-full bg-[#3F3D56] hover:bg-[#2d2b40] text-white py-3 rounded-md text-sm font-medium transition-colors"
                 >
                   Buy Now for ${listing?.buy_now_price.toFixed(2)}
                 </button>
+              ) : (
+                <div className="w-full text-center py-3 text-gray-500 font-medium border border-gray-300 rounded-md">
+                  You're the Seller
+                </div>
+              )}
+
               </div>
             </div>
           </div>

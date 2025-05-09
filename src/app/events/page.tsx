@@ -20,12 +20,23 @@ interface Event {
   current_ocupation: number;
 }
 
+interface UserInfo {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  apartment_id: number;
+  avatar: string;
+}
+
 
 export default function Activities() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [filterOpen, setFilterOpen] = useState(false)
   const [events, setEvents] = useState<Event[]>([])
   const [upcommingEvents, setUpcommingEvents] = useState<Event[]>([])
+  const [joinedEventIds, setJoinedEventIds] = useState<number[]>([]);
+
 
   const user = useUserStore((state) => state.user);
 
@@ -65,12 +76,58 @@ export default function Activities() {
     }
   }
 
+  const fetchUserEventsList = async (event_id: number) => {
+    try {
+      const res = await fetch(`http://localhost:1234/api/v1/event/users?event_id=${event_id}`);
+      if (!res.ok) throw new Error(await res.text());
+  
+      const users: { id: number }[] = await res.json();
+      if (users) {
+        if (users.some(u => u.id === user?.id)) {
+          setJoinedEventIds(prev => [...prev, event_id]);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    if (events && user?.id) {
+      events.forEach(event => {
+        fetchUserEventsList(event.id);
+      });
+    }
+  }, [events, user]);
+  
+  
+
   useEffect(() => {
     fetchEvents()
     if (user?.id) {
       fetchUpcommingEvents(Number(user.id))
     }
   }, [user])
+
+
+  const joinActivity = async(event_id: number, user_id: number) => {
+    try {
+      const res = await fetch("http://localhost:1234/api/v1/event/add", {
+        method: "POST",
+        body: JSON.stringify({
+          "community_event_id": event_id,
+          "user_id": user_id
+        })
+      })
+
+      if (!res.ok) {
+        const errorMessage = await res.text();
+        throw new Error(errorMessage || 'Failed to register');
+      }
+    } catch(error) {
+      console.log(error)
+    }
+  }
  
 
   // Activity categories
@@ -255,7 +312,7 @@ export default function Activities() {
               >
                 <div className="relative h-48 w-full">
                   <Image
-                    src="/placeholder.svg"
+                    src={event.event_image || "/placeholder.svg"}
                     alt={event.name}
                     fill
                     className="object-cover"
@@ -263,14 +320,10 @@ export default function Activities() {
                 </div>
                 <div className="p-5">
                   <h3 className="font-semibold text-xl text-gray-900 mb-2">{event.name}</h3>
-                  <p className="text-gray-600 text-sm mb-4">{event.percentage}</p>
+                  <p className="text-gray-600 text-sm mb-4">{(event.percentage * 100).toFixed(2)} % Reward</p>
                   <div className="flex flex-col gap-2 mb-4">
                     <div className="flex items-center text-sm text-gray-600">
                       <Calendar className="h-4 w-4 mr-2 text-[#3F3D56]" />
-                      {event.date_time}
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Clock className="h-4 w-4 mr-2 text-[#3F3D56]" />
                       {event.date_time}
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
@@ -283,15 +336,19 @@ export default function Activities() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <button className="flex-1 bg-[#3F3D56] hover:bg-[#2d2b40] text-white py-2 rounded-md text-sm font-medium transition-colors">
-                      Join Activity
-                    </button>
-                    <Link
-                      href={`/activities/${event.id}`}
-                      className="px-4 py-2 border border-gray-200 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      Details
-                    </Link>
+                  {joinedEventIds.includes(event.id) ? (
+                  <div className="flex-1 bg-gray-100 text-gray-500 py-2 rounded-md text-sm font-medium text-center cursor-not-allowed">
+                    You're already joined
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => joinActivity(event.id, Number(user?.id))}
+                    className="flex-1 bg-[#3F3D56] hover:bg-[#2d2b40] text-white py-2 rounded-md text-sm font-medium transition-colors"
+                  >
+                    Join Activity
+                  </button>
+                )}
+
                   </div>
                 </div>
               </div>
