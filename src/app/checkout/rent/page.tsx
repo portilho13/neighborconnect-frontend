@@ -6,27 +6,9 @@ import Image from "next/image"
 import { ArrowLeft, Wallet, CreditCard, Clock, Home } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import useUserStore from "../../../../lib/userStore"
-import { sub } from "date-fns"
+import { Rent } from "../../../../lib/types/Rent"
+import { AccountDetail } from "../../../../lib/types/AccountDetail"
 
-interface Rent {
-  id: number
-  month: number
-  year: number
-  base_amount: number
-  reduction: number
-  final_amount: number
-  apartment_id: number
-  status: string
-  due_day: number
-}
-
-interface AccountDetail {
-  id: number
-  accountNumber: number
-  balance: string
-  currency: string
-  userId: number
-}
 
 interface FormData {
   firstName: string

@@ -6,15 +6,9 @@ import Image from "next/image"
 import { ArrowLeft, Wallet, CreditCard } from "lucide-react"
 import { useRouter } from "next/navigation"
 import useUserStore from "../../../../lib/userStore"
+import { AccountDetail } from "../../../../lib/types/AccountDetail"
 
 
-interface AccountDetail {
-  id: number
-  accountNumber: number
-  balance: string
-  currency: string
-  userId: number
-}
 
 interface FormData {
   firstName: string

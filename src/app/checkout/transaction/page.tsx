@@ -6,15 +6,8 @@ import Image from "next/image"
 import { ArrowLeft, ShoppingBag, CreditCard, Clock } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import useUserStore from "../../../../lib/userStore"
-
-
-interface CartItem {
-  id: number
-  name: string
-  price: number
-  image: string
-  timeLeft: string
-}
+import { TransactionJson } from "../../../../lib/types/TransactionJson"
+import { AccountDetail } from "../../../../lib/types/AccountDetail"
 
 interface FormData {
   firstName: string
@@ -26,65 +19,10 @@ interface FormData {
   email: string
 }
 
-interface BidInfo {
-    id: number | null
-    bid_ammount: number
-    bid_time: Date
-    users_id: number | null
-    listing_id: number
-  }
   
-  interface Listing_Photo {
-    id: number
-    url: string
-  }
   
-  interface SellerInfo {
-    id: number
-    name: string
-  }
   
-  interface Listing {
-    id: number
-    name: string
-    description: string
-    buy_now_price: number
-    start_price: number
-    current_bid: BidInfo
-    created_at: Date
-    expiration_date: Date
-    status: string
-    seller: SellerInfo
-    category: Category
-    listing_photos: Listing_Photo[] | null
-  }
-  
-  interface Category {
-    id: number
-    name: string
-    url: string
-  }
-  
-  interface TransactionJson {
-    id: number
-    final_price: number
-    transaction_time: Date
-    transaction_type: string
-    seller_id: number
-    buyer_id: number
-    listing: Listing
-    payment_status: string
-    payment_due_time: Date
-    selected?: boolean
-  }
 
-interface AccountDetail {
-    id: number
-    account_number: number
-    balance: string
-    currency: string
-    user_id: number
-}
 
 
 export default function Checkout() {
@@ -111,34 +49,8 @@ export default function Checkout() {
   const [accountDetail, setAccountDetail] = useState<AccountDetail>()
 
 
-
-  const cartItems: CartItem[] = [
-    {
-      id: 1,
-      name: "Vintage Camera",
-      price: 120,
-      image: "/placeholder.svg?height=60&width=60",
-      timeLeft: "23:45:12",
-    },
-    {
-      id: 2,
-      name: "Antique Watch",
-      price: 250,
-      image: "/placeholder.svg?height=60&width=60",
-      timeLeft: "11:30:05",
-    },
-    {
-      id: 3,
-      name: "Collectible Coins",
-      price: 75,
-      image: "/placeholder.svg?height=60&width=60",
-      timeLeft: "05:15:30",
-    },
-  ]
-
-  const subtotal = cartItems.reduce((total, item) => total + item.price, 0)
   const fees = 15 // Service and processing fees
-  const total = subtotal + fees
+  const total = fees
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -455,10 +367,6 @@ export default function Checkout() {
             </div>
 
             <div className="space-y-3 mb-6">
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600">Subtotal:</span>
-                <span className="font-medium text-gray-900">${subtotal}</span>
-              </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600">Fees:</span>
                 <span className="font-medium text-gray-900">${fees}</span>

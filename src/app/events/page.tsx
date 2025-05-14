@@ -5,36 +5,15 @@ import Link from "next/link"
 import Image from "next/image"
 import { Search, Bell, Menu, Calendar, Users, MapPin, Clock, Filter, ChevronDown } from "lucide-react"
 import useUserStore from "../../../lib/userStore"
+import { CommunityEvent } from "../../../lib/types/CommunityEvent"
 
-
-interface Event {
-  id: number;
-  name: string;
-  percentage: number;
-  capacity: number;
-  date_time: string;
-  manager_id: number;
-  event_image: string;
-  duration: number;
-  local: string;
-  current_ocupation: number;
-}
-
-interface UserInfo {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  apartment_id: number;
-  avatar: string;
-}
 
 
 export default function Activities() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [filterOpen, setFilterOpen] = useState(false)
-  const [events, setEvents] = useState<Event[]>([])
-  const [upcommingEvents, setUpcommingEvents] = useState<Event[]>([])
+  const [events, setEvents] = useState<CommunityEvent[]>([])
+  const [upcommingEvents, setUpcommingEvents] = useState<CommunityEvent[]>([])
   const [joinedEventIds, setJoinedEventIds] = useState<number[]>([]);
 
 

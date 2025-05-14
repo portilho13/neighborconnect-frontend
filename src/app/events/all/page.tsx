@@ -23,26 +23,8 @@ import {
   Filter,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { CommunityEvent } from "../../../../lib/types/CommunityEvent"
 
-interface CommunityEvent {
-  id: number | null
-  name: string
-  percentage: number
-  code: string
-  capacity: number
-  date_time: string
-  manager_id: number
-  event_image: string
-  duration: string
-  local: string
-  current_ocupation: number
-}
-
-interface User {
-  id: number
-  name: string
-  email: string
-}
 
 export default function EventsPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -62,106 +44,6 @@ export default function EventsPage() {
     email: "john@example.com",
   }
 
-  useEffect(() => {
-    // Simulate fetching events data
-    const fetchEvents = async () => {
-      try {
-        // In a real app, this would be an API call
-        // const res = await fetch(`/api/events?manager_id=${user.id}`);
-        // const data = await res.json();
-
-        // Mock data for demonstration
-        const mockEvents: CommunityEvent[] = [
-          {
-            id: 1,
-            name: "Community BBQ",
-            percentage: 80,
-            code: "BBQ2023",
-            capacity: 50,
-            date_time: "May 20, 2023 - 4:00 PM",
-            manager_id: 1,
-            event_image: "/placeholder.svg?height=200&width=400",
-            duration: "3 hours",
-            local: "Central Park",
-            current_ocupation: 24,
-          },
-          {
-            id: 2,
-            name: "Yoga in the Park",
-            percentage: 60,
-            code: "YOGA2023",
-            capacity: 20,
-            date_time: "May 15, 2023 - 8:00 AM",
-            manager_id: 1,
-            event_image: "/placeholder.svg?height=200&width=400",
-            duration: "1 hour",
-            local: "Sunset Park",
-            current_ocupation: 12,
-          },
-          {
-            id: 3,
-            name: "Book Club Meeting",
-            percentage: 100,
-            code: "BOOK2023",
-            capacity: 15,
-            date_time: "May 10, 2023 - 7:00 PM",
-            manager_id: 1,
-            event_image: "/placeholder.svg?height=200&width=400",
-            duration: "1.5 hours",
-            local: "Community Center",
-            current_ocupation: 8,
-          },
-          {
-            id: 4,
-            name: "Neighborhood Cleanup",
-            percentage: 100,
-            code: "CLEAN2023",
-            capacity: 30,
-            date_time: "May 5, 2023 - 9:00 AM",
-            manager_id: 1,
-            event_image: "/placeholder.svg?height=200&width=400",
-            duration: "3 hours",
-            local: "Main Street",
-            current_ocupation: 15,
-          },
-          {
-            id: 5,
-            name: "Movie Night",
-            percentage: 40,
-            code: "MOVIE2023",
-            capacity: 40,
-            date_time: "May 25, 2023 - 8:00 PM",
-            manager_id: 1,
-            event_image: "/placeholder.svg?height=200&width=400",
-            duration: "2.5 hours",
-            local: "Community Center",
-            current_ocupation: 0,
-          },
-          {
-            id: 6,
-            name: "Cooking Workshop",
-            percentage: 70,
-            code: "COOK2023",
-            capacity: 15,
-            date_time: "June 2, 2023 - 6:00 PM",
-            manager_id: 1,
-            event_image: "/placeholder.svg?height=200&width=400",
-            duration: "2 hours",
-            local: "Community Kitchen",
-            current_ocupation: 0,
-          },
-        ]
-
-        setEvents(mockEvents)
-      } catch (error) {
-        console.error("Error fetching events:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchEvents()
-  }, [])
 
   // Function to handle concluding an event
   const handleConcludeEvent = (event: CommunityEvent) => {

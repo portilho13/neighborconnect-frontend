@@ -16,6 +16,7 @@ import * as ToastPrimitive from "@radix-ui/react-toast"
 import { cva } from "class-variance-authority"
 import { cn } from "../../../../lib/utils"
 import useUserStore from "../../../../lib/userStore"
+import { Category } from "../../../../lib/types/Category"
 
 
 
@@ -321,11 +322,6 @@ const FormField = ({
   )
 }
 
-interface Category {
-  id: number
-  name: string
-  url: string
-}
 
 export default function CreateListing() {
   const router = useRouter()

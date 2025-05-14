@@ -23,86 +23,11 @@ import {
 import useUserStore from "../../../lib/userStore"
 import LoadingSpinner from "../../../components/loading-spinner"
 import { useRouter } from "next/navigation"
+import { Rent } from "../../../lib/types/Rent"
+import { AccountDetail } from "../../../lib/types/AccountDetail"
+import { TransactionJson } from "../../../lib/types/TransactionJson"
+import { AccountMovement } from "../../../lib/types/AccountMovement"
 
-interface Rent {
-  id: number
-  month: number
-  year: number
-  base_amount: number
-  reduction: number
-  final_amount: number
-  apartment_id: number
-  status: string
-  due_day: number
-}
-
-interface AccountDetail {
-  id: number
-  account_number: number
-  balance: string
-  currency: string
-  user_id: number
-}
-
-interface BidInfo {
-  id: number | null
-  bid_ammount: number
-  bid_time: Date
-  users_id: number | null
-  listing_id: number
-}
-
-interface Listing_Photo {
-  id: number
-  url: string
-}
-
-interface SellerInfo {
-  id: number
-  name: string
-}
-
-interface Listing {
-  id: number
-  name: string
-  description: string
-  buy_now_price: number
-  start_price: number
-  current_bid: BidInfo
-  created_at: Date
-  expiration_date: Date
-  status: string
-  seller: SellerInfo
-  category: Category
-  listing_photos: Listing_Photo[] | null
-}
-
-interface Category {
-  id: number
-  name: string
-  url: string
-}
-
-interface TransactionJson {
-  id: number
-  final_price: number
-  transaction_time: Date
-  transaction_type: string
-  seller_id: number
-  buyer_id: number
-  listing: Listing
-  payment_status: string
-  payment_due_time: Date
-  selected?: boolean // Added selected property
-}
-
-interface AccountMovement {
-  id: number
-  amount: number
-  created_at: Date
-  account_id: number
-  type: string
-}
 
 const months = [
   "January",

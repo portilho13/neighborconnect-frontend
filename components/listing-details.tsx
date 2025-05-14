@@ -8,37 +8,11 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, Heart, Clock, Share2, Bell, Menu } from "lucide-react"
 import useUserStore from "../lib/userStore"
+import { BidInfo } from "../lib/types/BidInfo"
+import { Listing } from "../lib/types/Listing"
 
-interface Listing_Photo {
-  id: number
-  url: string
-}
 
-interface SellerInfo {
-  id: number
-  name: string
-}
 
-interface Listing {
-  id: number
-  name: string
-  description: string
-  buy_now_price: number
-  start_price: number
-  current_bid: BidInfo
-  created_at: Date
-  expiration_date: Date
-  status: string
-  seller: SellerInfo
-  category: Category
-  listing_photos: Listing_Photo[]
-}
-
-interface Category {
-  id: number
-  name: string
-  url: string
-}
 
 interface RelatedListing {
   id: number
@@ -50,13 +24,6 @@ interface RelatedListing {
 
 interface ListingDetailProps {
   id: string
-}
-
-interface BidInfo {
-  id: number | null
-  bid_ammount: number
-  users_id: number | null
-  listing_id: number
 }
 
 export default function ListingDetail({ id }: ListingDetailProps) {
@@ -92,7 +59,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
   // Navigation functions
   const nextImage = () => {
     if (listing?.listing_photos && listing.listing_photos.length > 0) {
-      setCurrentImageIndex((prev) => (prev === listing.listing_photos.length - 1 ? 0 : prev + 1))
+      setCurrentImageIndex((prev) => (prev === listing.listing_photos?.length - 1 ? 0 : prev + 1))
     }
   }
 
@@ -194,6 +161,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
         const bid: BidInfo = {
           id: data.id ?? null,
           bid_ammount: data.bid_ammount,
+          bid_time: new Date(),
           users_id: data.users_id ?? null,
           listing_id: data.listing_id,
         }

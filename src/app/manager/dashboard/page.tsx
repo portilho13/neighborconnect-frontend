@@ -25,99 +25,12 @@ import {
 
 import useUserStore from "../../../../lib/userStore"
 import { useRouter } from "next/navigation"
-import { json } from "stream/consumers"
+import { CommunityEvent } from "../../../../lib/types/CommunityEvent"
+import { ManagerDashboardInfo } from "../../../../lib/types/ManagerDashboardInfo"
+import { UserInfo } from "../../../../lib/types/UserInfo"
+import { Apartment } from "../../../../lib/types/Apartment"
 
-interface Rent {
-  id: number
-  month: number
-  year: number
-  base_amount: number
-  reduction: number
-  final_amount: number
-  apartment_id: number
-  status: string
-  due_day: number
-}
-interface Apartment {
-  id: number
-  n_bedrooms: number
-  floor: number
-  rent: number
-  manager_id: number
-  status: string
-  last_rent: Rent
-}
 
-interface BidInfo {
-  id: number | null
-  bid_ammount: number
-  bid_time: Date
-  users_id: number | null
-  listing_id: number
-}
-
-interface Listing_Photo {
-  id: number
-  url: string
-}
-
-interface SellerInfo {
-  id: number
-  name: string
-}
-
-interface Listing {
-  id: number
-  name: string
-  description: string
-  buy_now_price: number
-  start_price: number
-  current_bid: BidInfo
-  created_at: Date
-  expiration_date: Date
-  status: string
-  seller: SellerInfo
-  category: Category
-  listing_photos: Listing_Photo[] | null
-}
-
-interface Category {
-  id: number
-  name: string
-  url: string
-}
-
-interface CommunityEvent {
-  id: number | null
-  name: string
-  percentage: number
-  code: string
-  capacity: number
-  date_time: string
-  manager_id: number
-  event_image: string
-  duration: string
-  local: string
-  current_ocupation: number
-  status: string
-  expiration_date: Date | null
-}
-
-interface UserInfo {
-  id: number
-  name: string
-  email: string
-  phone: string
-  apartment_id: number
-  avatar: string
-}
-
-interface ManagerDashboardInfo {
-  apartments: Apartment[] | null
-  users: UserInfo[] | null
-  listings: Listing[] | null
-  events: CommunityEvent[] | null
-}
 
 export default function ManagerDashboard() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
