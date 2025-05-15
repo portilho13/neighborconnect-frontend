@@ -601,7 +601,7 @@ export default function Dashboard() {
             <h2 className="text-xl font-semibold mb-4 text-gray-900">Quick Actions</h2>
             <div className="grid grid-cols-2 gap-3">
               <Link
-                href="/dashboard/events"
+                href="/events"
                 className="flex flex-col items-center bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg p-4 border border-gray-100"
               >
                 <div className="w-10 h-10 rounded-full bg-[#3F3D56]/10 flex items-center justify-center mb-2">
@@ -611,7 +611,7 @@ export default function Dashboard() {
               </Link>
 
               <Link
-                href="/dashboard/marketplace"
+                href="/marketplace"
                 className="flex flex-col items-center bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg p-4 border border-gray-100"
               >
                 <div className="w-10 h-10 rounded-full bg-[#3F3D56]/10 flex items-center justify-center mb-2">
@@ -621,7 +621,7 @@ export default function Dashboard() {
               </Link>
 
               <Link
-                href="/dashboard/neighbors"
+                href="/neighbors"
                 className="flex flex-col items-center bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg p-4 border border-gray-100"
               >
                 <div className="w-10 h-10 rounded-full bg-[#3F3D56]/10 flex items-center justify-center mb-2">
@@ -742,7 +742,7 @@ export default function Dashboard() {
         <div className="mt-8">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-900">Upcoming Events</h2>
-            <Link href="/dashboard/events" className="text-[#3F3D56] text-sm hover:underline">
+            <Link href="/events" className="text-[#3F3D56] text-sm hover:underline">
               View All
             </Link>
           </div>
