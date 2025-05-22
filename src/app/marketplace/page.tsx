@@ -6,6 +6,7 @@ import Image from "next/image"
 import { Search, Bell, Menu, Heart, Plus } from "lucide-react"
 import useUserStore from "../../../lib/userStore"
 import { useRouter } from "next/navigation"
+import Header from "../../../components/header"
 
 interface Listing_Photo {
   id: number;
@@ -138,94 +139,7 @@ export default function Marketplace() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
-        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/dashboard" className="font-bold text-xl text-[#3F3D56]">
-              NeighboorConnect
-            </Link>
-
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Home
-              </Link>
-              <Link href="/activities" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Activities
-              </Link>
-              <Link href="/marketplace" className="text-gray-900 font-medium">
-                Marketplace
-              </Link>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="relative hidden md:block">
-              <input
-                type="text"
-                placeholder="What are you looking for?"
-                className="bg-gray-100 border border-gray-200 rounded-lg py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#3F3D56] w-[250px] lg:w-[300px]"
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            </div>
-
-            <button className="relative p-2 rounded-full hover:bg-gray-100 transition-colors">
-              <Bell className="h-5 w-5 text-gray-600" />
-              <span className="absolute top-1 right-1 bg-[#3F3D56] rounded-full w-2 h-2"></span>
-            </button>
-
-            <div className="hidden md:flex items-center gap-3">
-              <div className="h-8 w-8 rounded-full bg-[#3F3D56] flex items-center justify-center text-white">
-                <span className="font-medium text-sm">{user?.name.charAt(0)}</span>
-              </div>
-              <span className="text-sm font-medium text-gray-900">{user?.name}</span>
-            </div>
-
-            <button
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              <Menu className="h-5 w-5 text-gray-600" />
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200 py-3 px-4">
-            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-200">
-              <div className="h-8 w-8 rounded-full bg-[#3F3D56] flex items-center justify-center text-white">
-                <span className="font-medium text-sm">{user?.name.charAt(0)}</span>
-              </div>
-              <span className="text-sm font-medium text-gray-900">{user?.name}</span>
-            </div>
-
-            <div className="relative mb-4">
-              <input
-                type="text"
-                placeholder="What are you looking for?"
-                className="bg-gray-100 border border-gray-200 rounded-lg py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#3F3D56] w-full"
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            </div>
-
-            <nav className="flex flex-col space-y-3">
-              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Home
-              </Link>
-              <Link href="/activities" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Activities
-              </Link>
-              <Link href="/auction" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Auction
-              </Link>
-              <Link href="/dashboard/marketplace" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Marketplace
-              </Link>
-            </nav>
-          </div>
-        )}
-      </header>
+      <Header></Header>
 
       {/* Main content */}
       <main className="container mx-auto px-4 py-8">
