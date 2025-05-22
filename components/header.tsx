@@ -239,14 +239,11 @@ export default function Header() {
               <Link href="/dashboard" className="text-gray-900 font-medium">
                 Home
               </Link>
-              <Link href="/activities" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Activities
+              <Link href="/events" className="text-gray-600 hover:text-gray-900 transition-colors">
+                Events
               </Link>
-              <Link href="/auction" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Auction
-              </Link>
-              <Link href="/community" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Community
+              <Link href="/marketplace" className="text-gray-600 hover:text-gray-900 transition-colors">
+                Marketplace
               </Link>
             </nav>
           </div>

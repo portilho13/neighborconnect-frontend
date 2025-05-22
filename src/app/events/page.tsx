@@ -11,7 +11,6 @@ import Header from "../../../components/header"
 
 
 export default function Activities() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [filterOpen, setFilterOpen] = useState(false)
   const [events, setEvents] = useState<CommunityEvent[]>([])
   const [upcommingEvents, setUpcommingEvents] = useState<CommunityEvent[]>([])
@@ -104,6 +103,7 @@ export default function Activities() {
         const errorMessage = await res.text();
         throw new Error(errorMessage || 'Failed to register');
       }
+      setJoinedEventIds([...joinedEventIds, event_id]);
     } catch(error) {
       console.log(error)
     }

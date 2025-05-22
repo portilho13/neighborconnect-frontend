@@ -889,7 +889,7 @@ export default function ManagerDashboard() {
                   <h1 className="text-2xl font-bold text-gray-900">Event Management</h1>
                   <p className="text-gray-600">Create and manage community events.</p>
                 </div>
-                <button className="bg-[#3F3D56] text-white px-4 py-2 rounded-lg flex items-center">
+                <button onClick={() => {router.push("/manager/dashboard/event/create")}} className="bg-[#3F3D56] text-white px-4 py-2 rounded-lg flex items-center">
                   <PlusCircle className="h-5 w-5 mr-2" />
                   Create Event
                 </button>
