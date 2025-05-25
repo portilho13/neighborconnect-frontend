@@ -48,10 +48,6 @@ const months = [
 const maxDiscout = 400
 
 export default function Dashboard() {
-  const currentDate = new Date()
-  const options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" }
-  const formattedDate = currentDate.toLocaleDateString("pt-PT", options)
-  const endDate = "Jan 31"
 
   const [isLoading, setIsLoading] = useState(false)
   const [rents, setRents] = useState<Rent[]>([])
@@ -495,7 +491,7 @@ export default function Dashboard() {
                 <button onClick={()=> {router.push("/checkout/funds")}} className="bg-[#3F3D56] hover:bg-[#2d2b40] text-white px-4 py-2 rounded-lg font-medium transition-colors">
                   Add Funds
                 </button>
-                <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors">
+                <button onClick={() => {router.push('/dashboard/withdraw')}} className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium border border-gray-200 transition-colors">
                   Withdraw
                 </button>
               </div>
