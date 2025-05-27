@@ -3,26 +3,26 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Search, Bell, Menu, Heart, Plus } from "lucide-react"
+import { Heart, Plus } from "lucide-react"
 import useUserStore from "../../../lib/userStore"
 import { useRouter } from "next/navigation"
 import Header from "../../../components/header"
 
 interface Listing_Photo {
-  id: number;
-  url: string;
+  id: number
+  url: string
 }
 
 interface SellerInfo {
-  id: number;
-  name: string;
+  id: number
+  name: string
 }
 
 interface BidInfo {
-  id: number | null;
-  bid_ammount: number;
-  users_id: number | null;
-  listing_id: number;
+  id: number | null
+  bid_ammount: number
+  users_id: number | null
+  listing_id: number
 }
 
 interface Listing {
@@ -40,7 +40,6 @@ interface Listing {
   listing_photos: Listing_Photo[]
 }
 
-
 interface Category {
   id: number
   name: string
@@ -48,7 +47,6 @@ interface Category {
 }
 
 export default function Marketplace() {
-
   const router = useRouter()
 
   const handleMarketListingRedirect = (listing_id: number) => {
@@ -111,7 +109,6 @@ export default function Marketplace() {
             myAuctionsArr.push(listing)
           }
         })
-
       }
       setMyAuctions(myAuctionsArr)
     } catch (error) {
@@ -168,22 +165,14 @@ export default function Marketplace() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              <div className="flex flex-wrap gap-3">
                 {categories.map((category, index) => (
-                  <Link key={index} href={`/marketplace/category/${category.name.toLowerCase()}`} className="group">
-                    <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 group-hover:shadow-md group-hover:border-[#3F3D56]/20">
-                      <div className="relative h-40 w-full">
-                        <Image
-                          src={category.url || "/placeholder.svg"}
-                          alt={category.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="p-3 text-center">
-                        <h3 className="font-medium text-gray-900">{category.name}</h3>
-                      </div>
-                    </div>
+                  <Link
+                    key={index}
+                    href={`/marketplace/category/${category.name.toLowerCase()}`}
+                    className="bg-white hover:bg-[#3F3D56] text-[#3F3D56] hover:text-white px-4 py-2 rounded-full border border-[#3F3D56] transition-all duration-200 font-medium text-sm"
+                  >
+                    {category.name}
                   </Link>
                 ))}
               </div>
@@ -213,7 +202,12 @@ export default function Marketplace() {
                     onClick={() => handleMarketListingRedirect(auction.id)}
                   >
                     <div className="relative h-48 w-full">
-                      <Image src={auction.listing_photos[0].url || "/placeholder.svg"} alt={auction.name} fill className="object-cover" />
+                      <Image
+                        src={auction.listing_photos[0].url || "/placeholder.svg"}
+                        alt={auction.name}
+                        fill
+                        className="object-cover"
+                      />
                       <button className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1.5 rounded-full hover:bg-white transition-colors">
                         <Heart className="h-4 w-4 text-gray-600" />
                       </button>
@@ -263,7 +257,12 @@ export default function Marketplace() {
                     onClick={() => handleMarketListingRedirect(auction.id)}
                   >
                     <div className="relative h-48 w-full">
-                      <Image src={auction.listing_photos[0].url || "/placeholder.svg"} alt={auction.name} fill className="object-cover" />
+                      <Image
+                        src={auction.listing_photos[0].url || "/placeholder.svg"}
+                        alt={auction.name}
+                        fill
+                        className="object-cover"
+                      />
                       <button className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm p-1.5 rounded-full hover:bg-white transition-colors">
                         <Heart className="h-4 w-4 text-gray-600" />
                       </button>
