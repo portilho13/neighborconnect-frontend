@@ -268,27 +268,6 @@ export default function CreateEvent() {
     setErrors(newErrors)
   }, [name, capacity, local, duration, eventDate, eventImage]) // Removed 'errors' from dependencies
 
-  // Add a separate useEffect for fetchCategories
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        // In a real app, this would be an API call
-        // const res = await fetch("http://localhost:1234/api/v1/category")
-        // if (!res.ok) {
-        //   const errorMessage = await res.text()
-        //   throw new Error(errorMessage || "Failed to fetch categories")
-        // }
-        // setCategories(await res.json())
-
-        // For now, we'll just simulate it
-        console.log("Categories would be fetched here")
-      } catch (error) {
-        console.error(error)
-      }
-    }
-
-    fetchCategories()
-  }, [])
 
   // Check authentication
   useEffect(() => {
@@ -354,7 +333,7 @@ export default function CreateEvent() {
         capacity: Number.parseInt(capacity),
         date_time: combinedDateTime?.toISOString(),
         manager_id: user?.id,
-        duration: Number.parseInt(duration) * 1e9,
+        duration: Number.parseInt(duration) * 60 * 1e9, // Save as minutes
         local: local   
     }
 
@@ -384,7 +363,7 @@ export default function CreateEvent() {
       setShowToast(true)
 
       setTimeout(() => {
-        router.push("/events")
+        router.push("/manager/dashboard")
       }, 2000)
     } catch (error) {
       console.error("Error creating event:", error)

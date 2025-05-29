@@ -153,7 +153,7 @@ export default function Register() {
           console.error(err)
       } finally {
         setIsSubmitting(false)
-        router.push("/")
+        router.push("/login/client")
       }
     }
   }

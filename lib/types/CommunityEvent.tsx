@@ -7,7 +7,7 @@ export interface CommunityEvent {
   date_time: string
   manager_id: number
   event_image: string
-  duration: string
+  duration: number
   local: string
   current_ocupation: number
   status: string

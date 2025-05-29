@@ -72,6 +72,8 @@ export default function Dashboard() {
   const [neighborPopupOpen, setNeighborPopupOpen] = useState(false)
   const [apartmentPopupOpen, setApartmentPopupOpen] = useState(false)
 
+  const [events, setEvents] = useState<any[]>([])
+
   const { user, isAuthenticated, hasHydrated } = useUserStore()
 
   const router = useRouter()
@@ -96,7 +98,7 @@ export default function Dashboard() {
     }
   }
 
-  const fetchNeighbors = async() => {
+  const fetchNeighbors = async () => {
     try {
       const res = await fetch(`http://localhost:1234/api/v1/client`)
       if (!res.ok) {
@@ -144,6 +146,20 @@ export default function Dashboard() {
     }
   }
 
+  const fetchEvents = async () => {
+    try {
+      const res = await fetch(`http://localhost:1234/api/v1/event?user_id=${user?.id}`)
+      if (!res.ok) {
+        const errorMessage = await res.text()
+        throw new Error(errorMessage || "Failed to fetch events")
+      }
+
+      const data = await res.json()
+      setEvents(data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   useEffect(() => {
     if (!hasHydrated) return
@@ -155,6 +171,7 @@ export default function Dashboard() {
       fetchAccount()
       fetchAccountMovement()
       fetchNeighbors()
+      fetchEvents()
     }
   }, [hasHydrated, isAuthenticated, user])
 
@@ -510,7 +527,7 @@ export default function Dashboard() {
                           .filter(
                             (neighbor) =>
                               neighbor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                              neighbor.apartment_id.toString().toLowerCase().includes(searchTerm.toLowerCase())
+                              neighbor.apartment_id.toString().toLowerCase().includes(searchTerm.toLowerCase()),
                           )
                           .map((neighbor) => (
                             <div
@@ -533,13 +550,12 @@ export default function Dashboard() {
                         {neighbors.filter(
                           (neighbor) =>
                             neighbor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            neighbor.apartment_id.toString().toLowerCase().includes(searchTerm.toLowerCase())
+                            neighbor.apartment_id.toString().toLowerCase().includes(searchTerm.toLowerCase()),
                         ).length === 0 && (
                           <div className="text-center py-4 text-gray-500 text-sm">
                             No neighbors found matching "{searchTerm}"
                           </div>
                         )}
-
                       </div>
                     </div>
                   </div>
@@ -731,56 +747,98 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-100">
-              <div className="h-32 bg-gradient-to-r from-[#3F3D56]/10 to-[#6c6a8a]/10 relative">
-                <div className="absolute bottom-3 left-3 bg-[#3F3D56] text-white text-xs font-medium px-2 py-1 rounded">
-                  Jan 28
-                </div>
-              </div>
-              <div className="p-4">
-                <h3 className="font-medium mb-1 text-gray-900">Community Barbecue</h3>
-                <p className="text-sm text-gray-600 mb-2">Join us for a neighborhood gathering with food and games.</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">2:00 PM - 6:00 PM</span>
-                  <button className="text-xs text-[#3F3D56] hover:underline">RSVP</button>
-                </div>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {events && events.length > 0
+              ? events.map((event) => {
+                  const eventDate = new Date(event.date_time)
+                  const dateString = eventDate.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })
+                  const timeString = eventDate.toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  })
+                  const endTime = new Date(eventDate.getTime() + event.duration / 1000000).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  })
+                  const occupancyPercentage = (event.current_ocupation / event.capacity) * 100
 
-            <div className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-100">
-              <div className="h-32 bg-gradient-to-r from-[#3F3D56]/10 to-[#6c6a8a]/10 relative">
-                <div className="absolute bottom-3 left-3 bg-[#3F3D56] text-white text-xs font-medium px-2 py-1 rounded">
-                  Jan 30
-                </div>
-              </div>
-              <div className="p-4">
-                <h3 className="font-medium mb-1 text-gray-900">Building Maintenance</h3>
-                <p className="text-sm text-gray-600 mb-2">Scheduled maintenance for the building's common areas.</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">9:00 AM - 12:00 PM</span>
-                  <button className="text-xs text-[#3F3D56] hover:underline">Details</button>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-100">
-              <div className="h-32 bg-gradient-to-r from-[#3F3D56]/10 to-[#6c6a8a]/10 relative">
-                <div className="absolute bottom-3 left-3 bg-[#3F3D56] text-white text-xs font-medium px-2 py-1 rounded">
-                  Feb 2
-                </div>
-              </div>
-              <div className="p-4">
-                <h3 className="font-medium mb-1 text-gray-900">Yoga in the Park</h3>
-                <p className="text-sm text-gray-600 mb-2">
-                  Outdoor yoga session for all residents. Bring your own mat.
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">8:00 AM - 9:00 AM</span>
-                  <button className="text-xs text-[#3F3D56] hover:underline">RSVP</button>
-                </div>
-              </div>
-            </div>
+                  return (
+                    <div
+                      key={event.id}
+                      className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-100"
+                    >
+                      <div className="h-32 relative">
+                        {event.event_image ? (
+                          <img
+                            src={event.event_image || "/placeholder.svg"}
+                            alt={event.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full bg-gradient-to-r from-[#3F3D56]/10 to-[#6c6a8a]/10" />
+                        )}
+                        <div className="absolute bottom-3 left-3 bg-[#3F3D56] text-white text-xs font-medium px-2 py-1 rounded">
+                          {dateString}
+                        </div>
+                        {event.status === "active" && (
+                          <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-medium px-2 py-1 rounded">
+                            Active
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-medium mb-1 text-gray-900">{event.name}</h3>
+                        <p className="text-sm text-gray-600 mb-2">
+                          Reward: {parseFloat(event.percentage.toFixed(2)) * 100} %
+                        </p>
+                        <p className="text-sm text-gray-600 mb-2">Location: {event.local}</p>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs text-gray-500">
+                            {timeString} - {endTime}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {event.current_ocupation}/{event.capacity} spots
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5 mb-2">
+                          <div
+                            className="bg-[#3F3D56] h-1.5 rounded-full"
+                            style={{ width: `${Math.min(occupancyPercentage, 100)}%` }}
+                          ></div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-500">{occupancyPercentage.toFixed(0)}% full</span>
+                          <button className="text-xs text-[#3F3D56] hover:underline">
+                            {event.current_ocupation >= event.capacity ? "Full" : "RSVP"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })
+              : // Fallback content when no events are available
+                Array.from({ length: 1 }).map((_, index) => (
+                  <div key={index} className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-100">
+                    <div className="h-32 bg-gradient-to-r from-[#3F3D56]/10 to-[#6c6a8a]/10 relative">
+                      <div className="absolute bottom-3 left-3 bg-gray-300 text-gray-600 text-xs font-medium px-2 py-1 rounded">
+                        TBD
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-medium mb-1 text-gray-900">No Events Scheduled</h3>
+                      <p className="text-sm text-gray-600 mb-2">Check back later for upcoming community events.</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Stay tuned</span>
+                        <button className="text-xs text-gray-400">Coming Soon</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
           </div>
         </div>
       </main>
