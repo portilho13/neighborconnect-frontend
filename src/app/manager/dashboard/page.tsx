@@ -11,7 +11,6 @@ import {
   ShoppingBag,
   Users,
   DollarSign,
-  Settings,
   PlusCircle,
   X,
   Check,
@@ -165,7 +164,7 @@ export default function ManagerDashboard() {
             <div className="h-8 w-8 rounded-md bg-[#3F3D56] flex items-center justify-center text-white mr-2">
               <span className="font-bold">NC</span>
             </div>
-            <span className="font-bold text-lg text-gray-900">NeighboorConnect</span>
+            <span className="font-bold text-lg text-gray-900">NeighborConnect</span>
           </Link>
         </div>
 
@@ -243,17 +242,6 @@ export default function ManagerDashboard() {
               Finances
             </button>
 
-            <button
-              onClick={() => setActiveTab("settings")}
-              className={`flex items-center w-full px-3 py-2 text-sm font-medium rounded-md ${
-                activeTab === "settings"
-                  ? "bg-[#3F3D56] text-white"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              }`}
-            >
-              <Settings className="mr-3 h-5 w-5" />
-              Settings
-            </button>
           </nav>
         </div>
 
@@ -286,7 +274,7 @@ export default function ManagerDashboard() {
                 <Menu className="h-6 w-6" />
               </button>
               <Link href="/manager/dashboard" className="ml-2 font-bold text-xl text-[#3F3D56]">
-                NeighboorConnect
+                NeigborConnect
               </Link>
             </div>
 
@@ -425,21 +413,6 @@ export default function ManagerDashboard() {
                 >
                   <DollarSign className="mr-3 h-5 w-5" />
                   Finances
-                </button>
-
-                <button
-                  onClick={() => {
-                    setActiveTab("settings")
-                    setIsMobileMenuOpen(false)
-                  }}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                    activeTab === "settings"
-                      ? "bg-[#3F3D56] text-white"
-                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                  }`}
-                >
-                  <Settings className="mr-3 h-5 w-5" />
-                  Settings
                 </button>
               </nav>
             </div>

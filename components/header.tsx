@@ -25,6 +25,16 @@ export default function Header() {
     }
   }
 
+  const redirectTotransactions = () => {
+    const selectedIds = pendingTransactions
+  .filter(tx => tx.selected)
+  .map(tx => tx.id);
+
+// Create redirect URL
+const redirectUrl = `/checkout/transaction?ids=[${selectedIds.join(",")}]`;
+  router.push(redirectUrl)
+  }
+
   const getTimeLeft = (dueTime: Date): string => {
     const now = new Date()
     const due = new Date(dueTime)
@@ -220,6 +230,7 @@ useEffect(() => {
                       <button
                         className="w-full bg-[#3F3D56] hover:bg-[#2d2b40] text-white py-2 rounded-md text-sm font-medium transition-colors"
                         disabled={!pendingTransactions.some((t) => t.selected)}
+                        onClick={() => redirectTotransactions()}
                       >
                         Checkout
                       </button>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, type ChangeEvent, type FormEvent } from "react"
+import { useEffect, useState, type ChangeEvent, type FormEvent, Suspense } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, Wallet, CreditCard, Clock, Home } from "lucide-react"
@@ -8,7 +8,6 @@ import { useRouter, useSearchParams } from "next/navigation"
 import useUserStore from "../../../../lib/userStore"
 import { Rent } from "../../../../lib/types/Rent"
 import { AccountDetail } from "../../../../lib/types/AccountDetail"
-
 
 interface FormData {
   firstName: string
@@ -20,7 +19,8 @@ interface FormData {
   email: string
 }
 
-export default function PayRent() {
+// Separate component for the search params logic
+function PayRentContent() {
   const searchParams = useSearchParams()
   const idParam = searchParams.get("id")
   const rentId: number = idParam ? Number.parseInt(idParam, 10) : 0
@@ -43,8 +43,6 @@ export default function PayRent() {
 
   const { user, isAuthenticated, hasHydrated } = useUserStore()
 
-  
-
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData({
@@ -53,7 +51,7 @@ export default function PayRent() {
     })
   }
 
-  
+  const router = useRouter()
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -86,9 +84,6 @@ export default function PayRent() {
       setIsLoading(false)
     }
   }
-
-  const router = useRouter()
-
 
   // Fetch account details
   const fetchAccount = async () => {
@@ -509,5 +504,26 @@ export default function PayRent() {
         </div>
       </footer>
     </div>
+  )
+}
+
+// Loading fallback component
+function PayRentLoading() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#3F3D56] mx-auto mb-4"></div>
+        <p className="text-gray-600">Loading payment details...</p>
+      </div>
+    </div>
+  )
+}
+
+// Main component with Suspense wrapper
+export default function PayRent() {
+  return (
+    <Suspense fallback={<PayRentLoading />}>
+      <PayRentContent />
+    </Suspense>
   )
 }
