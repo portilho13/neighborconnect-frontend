@@ -43,7 +43,7 @@ export default function AddApartmentPage() {
 
     try {
       // Update with your actual API endpoint
-      const response = await fetch("http://localhost:1234/api/v1/apartment/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/apartment/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

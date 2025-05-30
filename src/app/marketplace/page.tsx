@@ -90,7 +90,7 @@ export default function Marketplace() {
 
   const fetchListings = async () => {
     try {
-      const res = await fetch("http://localhost:1234/api/v1/listing/all")
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/listing/all`)
       if (!res.ok) {
         const errorMessage = await res.text()
         throw new Error(errorMessage || "Failed to register")
@@ -118,7 +118,7 @@ export default function Marketplace() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch("http://localhost:1234/api/v1/category")
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/category`)
       if (!res.ok) {
         const errorMessage = await res.text()
         throw new Error(errorMessage || "Failed to register")

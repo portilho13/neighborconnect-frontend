@@ -345,7 +345,7 @@ export default function CreateEvent() {
       }
 
       // In a real app, this would be an API call
-      const res = await fetch('http://localhost:1234/api/v1/event', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/event`, {
         method: 'POST',
         body: formData,
       })

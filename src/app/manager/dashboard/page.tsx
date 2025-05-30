@@ -64,7 +64,7 @@ export default function ManagerDashboard() {
 
   const fetchParticipants = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:1234/api/v1/event/users?event_id=${id}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/event/users?event_id=${id}`)
       if (!res.ok) throw new Error(await res.text())
 
       const data: UserInfo[] = await res.json()
@@ -76,7 +76,7 @@ export default function ManagerDashboard() {
 
   const fetchDashboardInfo = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:1234/api/v1/manager/dashboard/info?manager_id=${id}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/manager/dashboard/info?manager_id=${id}`)
       if (!res.ok) throw new Error(await res.text())
 
       let data: ManagerDashboardInfo
@@ -194,7 +194,7 @@ export default function ManagerDashboard() {
   const finalizeEventConclusion = async () => {
     try {
       if (!selectedEvent) throw new Error("Event must be selected")
-      const res = await fetch("http://localhost:1234/api/v1/event/conclude", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/event/conclude`, {
         method: "POST",
         body: JSON.stringify({
           community_event_id: selectedEvent.id,

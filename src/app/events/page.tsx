@@ -97,7 +97,7 @@ export default function Activities() {
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch("http://localhost:1234/api/v1/event")
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/event`)
 
       if (!res.ok) {
         const errorMessage = await res.text()
@@ -155,7 +155,7 @@ export default function Activities() {
 
   const fetchUserEventsList = async (event_id: number) => {
     try {
-      const res = await fetch(`http://localhost:1234/api/v1/event/users?event_id=${event_id}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/event/users?event_id=${event_id}`)
       if (!res.ok) throw new Error(await res.text())
 
       const users: { id: number }[] = await res.json()
@@ -187,7 +187,7 @@ export default function Activities() {
 
   const joinActivity = async (event_id: number, user_id: number) => {
     try {
-      const res = await fetch("http://localhost:1234/api/v1/event/add", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/event/add`, {
         method: "POST",
         body: JSON.stringify({
           community_event_id: event_id,

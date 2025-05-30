@@ -130,7 +130,7 @@ export default function Register() {
       setIsSubmitting(true)
 
       try {
-        const res = await fetch("http://localhost:1234/api/v1/client/register", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/client/register`, {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',

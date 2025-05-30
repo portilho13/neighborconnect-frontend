@@ -396,7 +396,7 @@ export default function CreateListing() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch("http://localhost:1234/api/v1/category")
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/category`)
       if (!res.ok) {
         const errorMessage = await res.text()
         throw new Error(errorMessage || "Failed to register")
@@ -444,7 +444,7 @@ export default function CreateListing() {
         formData.append('images', file)
       })
   
-      const response = await fetch('http://localhost:1234/api/v1/listing/', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/listing/`, {
         method: 'POST',
         body: formData,
       })

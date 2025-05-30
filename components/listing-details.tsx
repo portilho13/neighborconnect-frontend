@@ -71,7 +71,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
   }
 
   const handlePlaceBid = async () => {
-    const response = await fetch("http://localhost:1234/api/v1/bid/", {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/bid/`, {
       method: "POST",
       body: JSON.stringify({
         bid_ammount: Number(bidAmount),
@@ -130,7 +130,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
   const fetchListing = async (id: number) => {
     setIsLoading(true)
     try {
-      const res = await fetch(`http://localhost:1234/api/v1/listing?id=${id}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/listing?id=${id}`)
       if (!res.ok) {
         const errorMessage = await res.text()
         throw new Error(errorMessage || "Failed to fetch")
@@ -222,7 +222,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
 
   const handleBuyNow = async () => {
     try {
-      const res = await fetch("http://localhost:1234/api/v1/buy/", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/buy/`, {
         method: "POST",
         body: JSON.stringify({
           listing_id: Number(id),

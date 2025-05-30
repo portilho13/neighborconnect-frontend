@@ -81,7 +81,7 @@ export default function Dashboard() {
   const fetchRent = async (apartment_id: number) => {
     setIsLoading(true)
     try {
-      const res = await fetch(`http://localhost:1234/api/v1/rent?apartment_id=${apartment_id}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/rent?apartment_id=${apartment_id}`)
 
       if (!res.ok) {
         const errorMessage = await res.text()
@@ -100,7 +100,7 @@ export default function Dashboard() {
 
   const fetchNeighbors = async () => {
     try {
-      const res = await fetch(`http://localhost:1234/api/v1/client`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/client`)
       if (!res.ok) {
         const errorMessage = await res.text()
         throw new Error(errorMessage || "Failed to fetch transactoions")
@@ -116,7 +116,7 @@ export default function Dashboard() {
 
   const fetchAccount = async () => {
     try {
-      const res = await fetch(`http://localhost:1234/api/v1/account?user_id=${user?.id.toString()}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/account?user_id=${user?.id.toString()}`)
       if (!res.ok) {
         const errorMessage = await res.text()
         throw new Error(errorMessage || "Failed to fetch transactoions")
@@ -132,7 +132,7 @@ export default function Dashboard() {
 
   const fetchAccountMovement = async () => {
     try {
-      const res = await fetch(`http://localhost:1234/api/v1/account/movement?user_id=${user?.id.toString()}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/account/movement?user_id=${user?.id.toString()}`)
       if (!res.ok) {
         const errorMessage = await res.text()
         throw new Error(errorMessage || "Failed to fetch transactoions")
@@ -148,7 +148,7 @@ export default function Dashboard() {
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch(`http://localhost:1234/api/v1/event?user_id=${user?.id}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/event?user_id=${user?.id}`)
       if (!res.ok) {
         const errorMessage = await res.text()
         throw new Error(errorMessage || "Failed to fetch events")
@@ -200,7 +200,7 @@ export default function Dashboard() {
     }
 
     try {
-      const res = await fetch("http://localhost:1234/api/v1/event/reward", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/event/reward`, {
         method: "POST",
         body: JSON.stringify({
           code: discountCode,

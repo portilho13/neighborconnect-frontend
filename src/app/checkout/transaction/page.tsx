@@ -64,7 +64,7 @@ export default function Checkout() {
     e.preventDefault();
   
     try {
-        const res = await fetch("http://localhost:1234/api/v1/transaction", {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/transaction`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -92,7 +92,7 @@ export default function Checkout() {
 
   const fetchPendingTransactions = async () => {
     try {
-      const res = await fetch(`http://localhost:1234/api/v1/transaction?user_id=${user?.id.toString()}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/transaction?user_id=${user?.id.toString()}`)
       if (!res.ok) {
         const errorMessage = await res.text()
         throw new Error(errorMessage || "Failed to fetch transactoions")
@@ -115,7 +115,7 @@ export default function Checkout() {
 
   const fetchAccount = async () => {
     try {
-      const res = await fetch(`http://localhost:1234/api/v1/account?user_id=${user?.id.toString()}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/account?user_id=${user?.id.toString()}`)
       if (!res.ok) {
         const errorMessage = await res.text()
         throw new Error(errorMessage || "Failed to fetch transactoions")

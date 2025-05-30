@@ -72,7 +72,7 @@ export default function AddFunds() {
 
     try {
       // Simulate API call
-      const res = await fetch("http://localhost:1234/api/v1/deposit", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/deposit`, {
         method: "POST",
         body: JSON.stringify({
             "type": paymentType,

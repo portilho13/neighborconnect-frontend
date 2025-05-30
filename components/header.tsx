@@ -69,7 +69,7 @@ export default function Header() {
 
   const fetchPendingTransactions = async () => {
     try {
-      const res = await fetch(`http://localhost:1234/api/v1/transaction?user_id=${user?.id.toString()}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/transaction?user_id=${user?.id.toString()}`)
       if (!res.ok) {
         const errorMessage = await res.text()
         throw new Error(errorMessage || "Failed to fetch transactoions")
@@ -102,7 +102,7 @@ const handleProfilePictureChange = () => {
     formData.append("profilePicture", file)
 
     try {
-      const response = await fetch("http://localhost:1234/api/v1/client/upload", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/client/upload`, {
         method: "POST",
         body: formData,
       })

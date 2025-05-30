@@ -39,7 +39,7 @@ export default function WithdrawalCheckout() {
 
     const fetchAccount = async () => {
         try {
-        const res = await fetch(`http://localhost:1234/api/v1/account?user_id=${user?.id.toString()}`)
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/account?user_id=${user?.id.toString()}`)
         if (!res.ok) {
             const errorMessage = await res.text()
             throw new Error(errorMessage || "Failed to fetch transactoions")
@@ -143,7 +143,7 @@ useEffect(() => {
 
     try {
       // Simulate API call
-      const res = await fetch("http://localhost:1234/api/v1/withdraw", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/withdraw`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

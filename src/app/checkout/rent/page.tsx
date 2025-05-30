@@ -65,7 +65,7 @@ export default function PayRent() {
 
     try {
       // API call to process payment
-      const res = await fetch("http://localhost:1234/api/v1/rent", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/rent`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -96,7 +96,7 @@ export default function PayRent() {
   // Fetch account details
   const fetchAccount = async () => {
     try {
-      const res = await fetch(`http://localhost:1234/api/v1/account?user_id=${user?.id.toString()}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/account?user_id=${user?.id.toString()}`)
       if (!res.ok) {
         const errorMessage = await res.text()
         throw new Error(errorMessage || "Failed to fetch account details")
@@ -112,7 +112,7 @@ export default function PayRent() {
   // Fetch rent payment
   const fetchRentPayment = async () => {
     try {
-      const res = await fetch(`http://localhost:1234/api/v1/rent/info?id=${rentId.toString()}`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/rent/info?id=${rentId.toString()}`)
       if (!res.ok) {
         const errorMessage = await res.text()
         throw new Error(errorMessage || "Failed to fetch rent payment")
