@@ -626,31 +626,6 @@ export default function Dashboard() {
                 )}
               </div>
             </div>
-
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <h3 className="text-sm font-medium mb-3 text-gray-900">Recent Activity</h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3 border border-gray-100">
-                  <div className="w-8 h-8 rounded-full bg-[#3F3D56]/10 flex items-center justify-center">
-                    <Calendar className="h-4 w-4 text-[#3F3D56]" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">Community Meeting</p>
-                    <p className="text-xs text-gray-500">Tomorrow, 7:00 PM</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3 border border-gray-100">
-                  <div className="w-8 h-8 rounded-full bg-[#3F3D56]/10 flex items-center justify-center">
-                    <ShoppingBag className="h-4 w-4 text-[#3F3D56]" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900">New Items in Marketplace</p>
-                    <p className="text-xs text-gray-500">3 new items added</p>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -822,23 +797,7 @@ export default function Dashboard() {
                   )
                 })
               : // Fallback content when no events are available
-                Array.from({ length: 1 }).map((_, index) => (
-                  <div key={index} className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-100">
-                    <div className="h-32 bg-gradient-to-r from-[#3F3D56]/10 to-[#6c6a8a]/10 relative">
-                      <div className="absolute bottom-3 left-3 bg-gray-300 text-gray-600 text-xs font-medium px-2 py-1 rounded">
-                        TBD
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-medium mb-1 text-gray-900">No Events Scheduled</h3>
-                      <p className="text-sm text-gray-600 mb-2">Check back later for upcoming community events.</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">Stay tuned</span>
-                        <button className="text-xs text-gray-400">Coming Soon</button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                <></>}
           </div>
         </div>
       </main>

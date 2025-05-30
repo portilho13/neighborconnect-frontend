@@ -25,12 +25,10 @@ import {
 
 import useUserStore from "../../../../lib/userStore"
 import { useRouter } from "next/navigation"
-import { CommunityEvent } from "../../../../lib/types/CommunityEvent"
-import { ManagerDashboardInfo } from "../../../../lib/types/ManagerDashboardInfo"
-import { UserInfo } from "../../../../lib/types/UserInfo"
-import { Apartment } from "../../../../lib/types/Apartment"
-
-
+import type { CommunityEvent } from "../../../../lib/types/CommunityEvent"
+import type { ManagerDashboardInfo } from "../../../../lib/types/ManagerDashboardInfo"
+import type { UserInfo } from "../../../../lib/types/UserInfo"
+import type { Apartment } from "../../../../lib/types/Apartment"
 
 export default function ManagerDashboard() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -39,7 +37,7 @@ export default function ManagerDashboard() {
   const [selectedEvent, setSelectedEvent] = useState<CommunityEvent>()
   const [dashboardInfo, setDashboardInfo] = useState<ManagerDashboardInfo>()
   const [eventParticipants, setEventParticipants] = useState<UserInfo[]>([])
-  const [rewardedIds, setRewardedIds] = useState<number[]>([]);
+  const [rewardedIds, setRewardedIds] = useState<number[]>([])
   const [activeConcludeEventId, setActiveConcludeEventId] = useState<number | null>(null)
 
   const router = useRouter()
@@ -64,16 +62,15 @@ export default function ManagerDashboard() {
     }
   }, [dashboardInfo])
 
-
   const fetchParticipants = async (id: number) => {
     try {
-        const res = await fetch(`http://localhost:1234/api/v1/event/users?event_id=${id}`)
-        if (!res.ok) throw new Error(await res.text())
-        
-        const data: UserInfo[] = await res.json()
-        setEventParticipants(data)
-    } catch(error) {
-        console.error(error)
+      const res = await fetch(`http://localhost:1234/api/v1/event/users?event_id=${id}`)
+      if (!res.ok) throw new Error(await res.text())
+
+      const data: UserInfo[] = await res.json()
+      setEventParticipants(data)
+    } catch (error) {
+      console.error(error)
     }
   }
 
@@ -106,8 +103,19 @@ export default function ManagerDashboard() {
   const stats = [
     { title: "Total Apartments", value: dashboardInfo?.apartments?.length ?? 0, change: null, icon: Building },
     { title: "Active Residents", value: dashboardInfo?.users?.length ?? 0, change: null, icon: Users },
-    { title: "Monthly Revenue", value: "$24,500", change: null, icon: DollarSign },
+    {
+      title: "Monthly Revenue",
+      value: `€${dashboardInfo?.manager_transactions?.reduce((sum, transaction) => sum + transaction.amount, 0) || 0}`,
+      change: null,
+      icon: DollarSign,
+    },
     { title: "Marketplace Listings", value: dashboardInfo?.listings?.length ?? 0, change: null, icon: ShoppingBag },
+    {
+      title: "Active Events",
+      value: dashboardInfo?.events?.filter((event) => event.status === "active").length ?? 0,
+      change: null,
+      icon: Calendar,
+    },
   ]
 
   // Mock data for apartments
@@ -169,8 +177,8 @@ export default function ManagerDashboard() {
 
   // Function to handle concluding an event
   const handleConcludeEvent = async (event: CommunityEvent) => {
-    if (!event.id) return;
-    await fetchParticipants(event.id);
+    if (!event.id) return
+    await fetchParticipants(event.id)
 
     setSelectedEvent(event)
     setConcludeEventModal(true)
@@ -178,30 +186,27 @@ export default function ManagerDashboard() {
 
   const toggleAwardStatus = (participantId: number) => {
     setRewardedIds((prev) =>
-      prev.includes(participantId)
-        ? prev.filter((id) => id !== participantId)
-        : [...prev, participantId]
-    );
-  };
-  
+      prev.includes(participantId) ? prev.filter((id) => id !== participantId) : [...prev, participantId],
+    )
+  }
 
   // Function to finalize event conclusion
-  const finalizeEventConclusion = async() => {
+  const finalizeEventConclusion = async () => {
     try {
-        if (!selectedEvent) throw new Error("Event must be selected")
-        const res = await fetch("http://localhost:1234/api/v1/event/conclude", {
-            method: "POST",
-            body: JSON.stringify({
-                "community_event_id": selectedEvent.id,
-                "awarded_users_ids": rewardedIds
-            })
-        })
+      if (!selectedEvent) throw new Error("Event must be selected")
+      const res = await fetch("http://localhost:1234/api/v1/event/conclude", {
+        method: "POST",
+        body: JSON.stringify({
+          community_event_id: selectedEvent.id,
+          awarded_users_ids: rewardedIds,
+        }),
+      })
 
-        if (!res.ok) throw new Error(await res.text())
-    } catch(error) {
-        console.error(error)
-    }finally{
-        setConcludeEventModal(false)
+      if (!res.ok) throw new Error(await res.text())
+    } catch (error) {
+      console.error(error)
+    } finally {
+      setConcludeEventModal(false)
     }
   }
 
@@ -506,7 +511,7 @@ export default function ManagerDashboard() {
               </div>
 
               {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                 {stats.map((stat, index) => (
                   <div
                     key={index}
@@ -534,46 +539,53 @@ export default function ManagerDashboard() {
                   </div>
                   <div className="p-6">
                     <div className="space-y-4">
-                      <div className="flex items-start">
-                        <div className="p-2 rounded-full bg-green-100 mr-3">
-                          <DollarSign className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">Rent Payment Received</p>
-                          <p className="text-xs text-gray-500">Sarah Johnson (A101) paid $1,200</p>
-                          <p className="text-xs text-gray-400">Today, 9:30 AM</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start">
-                        <div className="p-2 rounded-full bg-[#3F3D56]/10 mr-3">
-                          <Users className="h-5 w-5 text-[#3F3D56]" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">New Resident</p>
-                          <p className="text-xs text-gray-500">Emily Davis registered for apartment A104</p>
-                          <p className="text-xs text-gray-400">Yesterday, 2:15 PM</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start">
-                        <div className="p-2 rounded-full bg-orange-100 mr-3">
-                          <Calendar className="h-5 w-5 text-orange-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">Event Created</p>
-                          <p className="text-xs text-gray-500">Community BBQ scheduled for May 20</p>
-                          <p className="text-xs text-gray-400">Yesterday, 11:30 AM</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start">
-                        <div className="p-2 rounded-full bg-red-100 mr-3">
-                          <ShoppingBag className="h-5 w-5 text-red-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">Marketplace Listing Removed</p>
-                          <p className="text-xs text-gray-500">Removed inappropriate listing by David Wilson</p>
-                          <p className="text-xs text-gray-400">May 8, 4:45 PM</p>
-                        </div>
-                      </div>
+                      {dashboardInfo?.manager_activities && dashboardInfo.manager_activities.length > 0 ? (
+                        dashboardInfo.manager_activities.map((activity) => {
+                          // Determine icon based on activity type
+                          let IconComponent = DollarSign
+                          let iconBgColor = "bg-green-100"
+                          let iconColor = "text-green-600"
+
+                          if (activity.type.toLowerCase().includes("rent")) {
+                            IconComponent = DollarSign
+                            iconBgColor = "bg-green-100"
+                            iconColor = "text-green-600"
+                          } else if (activity.type.toLowerCase().includes("resident")) {
+                            IconComponent = Users
+                            iconBgColor = "bg-[#3F3D56]/10"
+                            iconColor = "text-[#3F3D56]"
+                          } else if (activity.type.toLowerCase().includes("event")) {
+                            IconComponent = Calendar
+                            iconBgColor = "bg-orange-100"
+                            iconColor = "text-orange-600"
+                          } else if (activity.type.toLowerCase().includes("marketplace")) {
+                            IconComponent = ShoppingBag
+                            iconBgColor = "bg-red-100"
+                            iconColor = "text-red-600"
+                          }
+
+                          return (
+                            <div key={activity.id} className="flex items-start">
+                              <div className={`p-2 rounded-full ${iconBgColor} mr-3`}>
+                                <IconComponent className={`h-5 w-5 ${iconColor}`} />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{activity.type}</p>
+                                <p className="text-xs text-gray-500">{activity.description}</p>
+                                <p className="text-xs text-gray-400">
+                                  {new Date(activity.created_at).toLocaleDateString()}{" "}
+                                  {new Date(activity.created_at).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </p>
+                              </div>
+                            </div>
+                          )
+                        })
+                      ) : (
+                        <p className="text-sm text-gray-500">No recent activities</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -630,29 +642,73 @@ export default function ManagerDashboard() {
                   </div>
                   {dashboardInfo?.events && dashboardInfo.events.length > 0 && (
                     <div className="p-6">
-                      <div className="space-y-4">
-                        {dashboardInfo?.events.slice(0, 3).map((event) => (
-                          <div key={event.id} className="flex items-start">
-                            <div className="p-2 rounded-lg bg-[#3F3D56]/10 mr-3 flex-shrink-0">
-                              <Calendar className="h-5 w-5 text-[#3F3D56]" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-900">{event.name}</p>
-                              <p className="text-xs text-gray-500">
-                                {event.date_time} • {event.duration}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {event.local} • {event.current_ocupation} / {event.capacity} participants
-                              </p>
-                            </div>
-                            <button
-                              onClick={() => setActiveTab("events")}
-                              className="text-xs text-[#3F3D56] hover:underline"
+                      <div className="grid grid-cols-1 gap-4">
+                        {dashboardInfo?.events.slice(0, 3).map((event) => {
+                          const eventDate = new Date(event.date_time)
+                          const dateString = eventDate.toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })
+                          const timeString = eventDate.toLocaleTimeString("en-US", {
+                            hour: "numeric",
+                            minute: "2-digit",
+                            hour12: true,
+                          })
+                          const occupancyPercentage = (event.current_ocupation / event.capacity) * 100
+
+                          return (
+                            <div
+                              key={event.id}
+                              className="bg-gray-50 rounded-lg p-4 border border-gray-100 hover:bg-gray-100 transition-colors"
                             >
-                              Manage
-                            </button>
-                          </div>
-                        ))}
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex items-center gap-3">
+                                  <div className="p-2 rounded-lg bg-[#3F3D56]/10">
+                                    <Calendar className="h-5 w-5 text-[#3F3D56]" />
+                                  </div>
+                                  <div>
+                                    <h3 className="font-medium text-gray-900">{event.name}</h3>
+                                    <p className="text-sm text-gray-600">{event.local}</p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="bg-[#3F3D56] text-white text-xs font-medium px-2 py-1 rounded">
+                                    {dateString}
+                                  </div>
+                                  {event.status === "active" && (
+                                    <div className="bg-green-500 text-white text-xs font-medium px-2 py-1 rounded mt-1">
+                                      Active
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="text-sm text-gray-600">{timeString}</span>
+                                <span className="text-sm text-gray-600">
+                                  {event.current_ocupation}/{event.capacity} participants
+                                </span>
+                              </div>
+
+                              <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+                                <div
+                                  className="bg-[#3F3D56] h-2 rounded-full"
+                                  style={{ width: `${Math.min(occupancyPercentage, 100)}%` }}
+                                ></div>
+                              </div>
+
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-gray-500">{occupancyPercentage.toFixed(0)}% full</span>
+                                <button
+                                  onClick={() => setActiveTab("events")}
+                                  className="text-sm text-[#3F3D56] hover:underline font-medium"
+                                >
+                                  Manage →
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        })}
                       </div>
                     </div>
                   )}
@@ -671,8 +727,8 @@ export default function ManagerDashboard() {
                   {dashboardInfo?.listings && dashboardInfo.listings.length > 0 && (
                     <div className="p-6">
                       <div className="space-y-4">
-                        {marketplaceListings
-                          .filter((listing) => listing.status === "Active")
+                        {dashboardInfo?.listings
+                          ?.filter((listing) => listing.status === "active")
                           .slice(0, 3)
                           .map((listing) => (
                             <div key={listing.id} className="flex items-start">
@@ -680,11 +736,13 @@ export default function ManagerDashboard() {
                                 <ShoppingBag className="h-5 w-5 text-[#3F3D56]" />
                               </div>
                               <div className="flex-1">
-                                <p className="text-sm font-medium text-gray-900">{listing.title}</p>
+                                <p className="text-sm font-medium text-gray-900">{listing.name}</p>
                                 <p className="text-xs text-gray-500">
-                                  {listing.seller} • {listing.price}
+                                  {listing.seller.name} • {listing.buy_now_price}
                                 </p>
-                                <p className="text-xs text-gray-400">Listed on {listing.listed}</p>
+                                <p className="text-xs text-gray-400">
+                                  Listed on {new Date(listing.created_at).toLocaleDateString()}
+                                </p>
                               </div>
                               <button
                                 onClick={() => setActiveTab("marketplace")}
@@ -889,7 +947,12 @@ export default function ManagerDashboard() {
                   <h1 className="text-2xl font-bold text-gray-900">Event Management</h1>
                   <p className="text-gray-600">Create and manage community events.</p>
                 </div>
-                <button onClick={() => {router.push("/manager/dashboard/event/create")}} className="bg-[#3F3D56] text-white px-4 py-2 rounded-lg flex items-center">
+                <button
+                  onClick={() => {
+                    router.push("/manager/dashboard/event/create")
+                  }}
+                  className="bg-[#3F3D56] text-white px-4 py-2 rounded-lg flex items-center"
+                >
                   <PlusCircle className="h-5 w-5 mr-2" />
                   Create Event
                 </button>
@@ -1180,6 +1243,155 @@ export default function ManagerDashboard() {
             </div>
           )}
 
+          {/* Residents Tab */}
+          {activeTab === "residents" && (
+            <div>
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Residents Management</h1>
+                  <p className="text-gray-600">View and manage all residents in your building.</p>
+                </div>
+              </div>
+
+              {/* Residents Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                  <p className="text-sm text-gray-500 mb-1">Total Residents</p>
+                  <p className="text-2xl font-semibold text-gray-900">{dashboardInfo?.users?.length ?? 0}</p>
+                </div>
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                  <p className="text-sm text-gray-500 mb-1">Active Residents</p>
+                  <p className="text-2xl font-semibold text-gray-900">
+                    {dashboardInfo?.users?.filter((user) => user.apartment_id !== null).length ?? 0}
+                  </p>
+                </div>
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                  <p className="text-sm text-gray-500 mb-1">Vacant Units</p>
+                  <p className="text-2xl font-semibold text-gray-900">
+                    {
+                      (dashboardInfo?.apartments ?? []).filter(
+                        (apartment: Apartment) => apartment.status === "unoccupied",
+                      ).length
+                    }
+                  </p>
+                </div>
+              </div>
+
+              {/* Residents Table */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                  <h2 className="font-semibold text-gray-900">All Residents</h2>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search residents..."
+                      className="bg-gray-100 border border-gray-200 rounded-lg py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#3F3D56] w-[250px]"
+                    />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  </div>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          ID
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Name
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Email
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Phone
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Apartment
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Status
+                        </th>
+                        <th scope="col" className="relative px-6 py-3">
+                          <span className="sr-only">Actions</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {dashboardInfo?.users?.map((resident) => (
+                        <tr key={resident.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {resident.id}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {resident.name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{resident.email}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {resident.phone || "N/A"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {resident.apartment_id ? `Apt ${resident.apartment_id}` : "Unassigned"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                resident.apartment_id ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
+                              {resident.apartment_id ? "Active" : "Pending"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button className="text-[#3F3D56] hover:text-[#2d2b40] mr-3">View</button>
+                            <button className="text-[#3F3D56] hover:text-[#2d2b40] mr-3">Edit</button>
+                            <button className="text-red-600 hover:text-red-800">Remove</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+                  <p className="text-sm text-gray-500">Showing {dashboardInfo?.users?.length ?? 0} residents</p>
+                  <div className="flex items-center space-x-2">
+                    <button className="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">
+                      Previous
+                    </button>
+                    <button className="px-3 py-1 bg-[#3F3D56] text-white rounded-md text-sm">1</button>
+                    <button className="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">
+                      2
+                    </button>
+                    <button className="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">
+                      3
+                    </button>
+                    <button className="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Finances Tab */}
           {activeTab === "finances" && (
             <div>
@@ -1192,26 +1404,45 @@ export default function ManagerDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                   <p className="text-sm text-gray-500 mb-1">Total Revenue</p>
-                  <p className="text-2xl font-semibold text-gray-900">{financialData.totalRevenue}</p>
+                  <p className="text-2xl font-semibold text-gray-900">
+                    €
+                    {dashboardInfo?.manager_transactions?.reduce((sum, transaction) => sum + transaction.amount, 0) ||
+                      0}
+                  </p>
                   <div className="mt-2 flex items-center text-xs text-green-600">
                     <ChevronUp className="h-4 w-4 mr-1" />
-                    <span>8% from last month</span>
+                    <span>From {dashboardInfo?.manager_transactions?.length || 0} transactions</span>
                   </div>
                 </div>
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                  <p className="text-sm text-gray-500 mb-1">Expenses</p>
-                  <p className="text-2xl font-semibold text-gray-900">{financialData.expenses}</p>
-                  <div className="mt-2 flex items-center text-xs text-red-600">
+                  <p className="text-sm text-gray-500 mb-1">Rent Collected</p>
+                  <p className="text-2xl font-semibold text-gray-900">
+                    €
+                    {dashboardInfo?.manager_transactions
+                      ?.filter((t) => t.type === "rent")
+                      .reduce((sum, transaction) => sum + transaction.amount, 0) || 0}
+                  </p>
+                  <div className="mt-2 flex items-center text-xs text-green-600">
                     <ChevronUp className="h-4 w-4 mr-1" />
-                    <span>3% from last month</span>
+                    <span>
+                      From {dashboardInfo?.manager_transactions?.filter((t) => t.type === "rent").length || 0} payments
+                    </span>
                   </div>
                 </div>
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                  <p className="text-sm text-gray-500 mb-1">Net Profit</p>
-                  <p className="text-2xl font-semibold text-gray-900">{financialData.netProfit}</p>
+                  <p className="text-sm text-gray-500 mb-1">Marketplace Fees</p>
+                  <p className="text-2xl font-semibold text-gray-900">
+                    €
+                    {dashboardInfo?.manager_transactions
+                      ?.filter((t) => t.type === "Fee")
+                      .reduce((sum, transaction) => sum + transaction.amount, 0) || 0}
+                  </p>
                   <div className="mt-2 flex items-center text-xs text-green-600">
                     <ChevronUp className="h-4 w-4 mr-1" />
-                    <span>10% from last month</span>
+                    <span>
+                      From {dashboardInfo?.manager_transactions?.filter((t) => t.type === "Fee").length || 0}{" "}
+                      transactions
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1224,33 +1455,43 @@ export default function ManagerDashboard() {
                   </div>
                   <div className="p-6">
                     <div className="space-y-4">
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm text-gray-700">Rent Collected</span>
-                          <span className="text-sm font-medium text-gray-900">{financialData.rentCollected}</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-[#3F3D56] h-2 rounded-full" style={{ width: "90%" }}></div>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm text-gray-700">Marketplace Fees</span>
-                          <span className="text-sm font-medium text-gray-900">{financialData.marketplaceFees}</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-[#3F3D56] h-2 rounded-full" style={{ width: "6%" }}></div>
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm text-gray-700">Event Fees</span>
-                          <span className="text-sm font-medium text-gray-900">{financialData.eventFees}</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div className="bg-[#3F3D56] h-2 rounded-full" style={{ width: "4%" }}></div>
-                        </div>
-                      </div>
+                      {(() => {
+                        const totalRevenue =
+                          dashboardInfo?.manager_transactions?.reduce(
+                            (sum, transaction) => sum + transaction.amount,
+                            0,
+                          ) || 0
+
+                        // Group by transaction type
+                        const revenueByType: Record<string, number> = {}
+                        dashboardInfo?.manager_transactions?.forEach((transaction) => {
+                          if (!revenueByType[transaction.type]) {
+                            revenueByType[transaction.type] = 0
+                          }
+                          revenueByType[transaction.type] += transaction.amount
+                        })
+
+                        return Object.entries(revenueByType).map(([type, amount]) => {
+                          const percentage = totalRevenue > 0 ? ((amount as number) / totalRevenue) * 100 : 0
+
+                          return (
+                            <div key={type}>
+                              <div className="flex justify-between mb-1">
+                                <span className="text-sm text-gray-700">
+                                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                                </span>
+                                <span className="text-sm font-medium text-gray-900">€{amount}</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div
+                                  className="bg-[#3F3D56] h-2 rounded-full"
+                                  style={{ width: `${percentage}%` }}
+                                ></div>
+                              </div>
+                            </div>
+                          )
+                        })
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -1261,110 +1502,106 @@ export default function ManagerDashboard() {
                   </div>
                   <div className="p-6">
                     <div className="space-y-4">
-                      <div className="flex items-start">
-                        <div className="p-2 rounded-full bg-green-100 mr-3">
-                          <DollarSign className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">Rent Payment</p>
-                          <p className="text-xs text-gray-500">Sarah Johnson (A101)</p>
-                          <p className="text-xs text-gray-400">Today, 9:30 AM</p>
-                        </div>
-                        <div className="text-sm font-medium text-green-600">+$1,200</div>
-                      </div>
-                      <div className="flex items-start">
-                        <div className="p-2 rounded-full bg-green-100 mr-3">
-                          <DollarSign className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">Marketplace Fee</p>
-                          <p className="text-xs text-gray-500">Mountain Bike Sale</p>
-                          <p className="text-xs text-gray-400">Yesterday, 2:15 PM</p>
-                        </div>
-                        <div className="text-sm font-medium text-green-600">+$35</div>
-                      </div>
-                      <div className="flex items-start">
-                        <div className="p-2 rounded-full bg-red-100 mr-3">
-                          <DollarSign className="h-5 w-5 text-red-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">Maintenance Expense</p>
-                          <p className="text-xs text-gray-500">Plumbing Repairs</p>
-                          <p className="text-xs text-gray-400">May 8, 11:30 AM</p>
-                        </div>
-                        <div className="text-sm font-medium text-red-600">-$450</div>
-                      </div>
-                      <div className="flex items-start">
-                        <div className="p-2 rounded-full bg-green-100 mr-3">
-                          <DollarSign className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">Rent Payment</p>
-                          <p className="text-xs text-gray-500">Emily Davis (A104)</p>
-                          <p className="text-xs text-gray-400">May 2, 10:15 AM</p>
-                        </div>
-                        <div className="text-sm font-medium text-green-600">+$1,100</div>
-                      </div>
+                      {dashboardInfo?.manager_transactions && dashboardInfo.manager_transactions.length > 0 ? (
+                        dashboardInfo.manager_transactions.map((transaction) => {
+                          // Determine icon based on transaction type
+                          const iconBgColor = transaction.type.toLowerCase() === "fee" ? "bg-blue-100" : "bg-green-100"
+                          const iconColor =
+                            transaction.type.toLowerCase() === "fee" ? "text-blue-600" : "text-green-600"
+                          const amountColor = "text-green-600"
+                          const amountPrefix = "+"
+
+                          return (
+                            <div key={transaction.id} className="flex items-start">
+                              <div className={`p-2 rounded-full ${iconBgColor} mr-3`}>
+                                <DollarSign className={`h-5 w-5 ${iconColor}`} />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-gray-900">
+                                  {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
+                                </p>
+                                <p className="text-xs text-gray-500">{transaction.description}</p>
+                                <p className="text-xs text-gray-400">
+                                  {new Date(transaction.date).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <div className={`text-sm font-medium ${amountColor}`}>
+                                {amountPrefix}€{transaction.amount}
+                              </div>
+                            </div>
+                          )
+                        })
+                      ) : (
+                        <p className="text-sm text-gray-500">No recent transactions</p>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Monthly Revenue Chart */}
+              {/* Monthly Revenue Chart - Keep this as is for now */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
                 <div className="px-6 py-4 border-b border-gray-100">
                   <h2 className="font-semibold text-gray-900">Monthly Revenue</h2>
                 </div>
                 <div className="p-6">
                   <div className="h-64 flex items-end space-x-2">
-                    <div className="flex-1 flex flex-col justify-end">
-                      <div className="bg-[#3F3D56] h-[60%] rounded-t-md"></div>
-                      <p className="text-xs text-center mt-2 text-gray-500">Jan</p>
-                    </div>
-                    <div className="flex-1 flex flex-col justify-end">
-                      <div className="bg-[#3F3D56] h-[70%] rounded-t-md"></div>
-                      <p className="text-xs text-center mt-2 text-gray-500">Feb</p>
-                    </div>
-                    <div className="flex-1 flex flex-col justify-end">
-                      <div className="bg-[#3F3D56] h-[65%] rounded-t-md"></div>
-                      <p className="text-xs text-center mt-2 text-gray-500">Mar</p>
-                    </div>
-                    <div className="flex-1 flex flex-col justify-end">
-                      <div className="bg-[#3F3D56] h-[80%] rounded-t-md"></div>
-                      <p className="text-xs text-center mt-2 text-gray-500">Apr</p>
-                    </div>
-                    <div className="flex-1 flex flex-col justify-end">
-                      <div className="bg-[#3F3D56] h-[90%] rounded-t-md"></div>
-                      <p className="text-xs text-center mt-2 text-gray-500">May</p>
-                    </div>
-                    <div className="flex-1 flex flex-col justify-end">
-                      <div className="bg-[#3F3D56]/30 h-[75%] rounded-t-md"></div>
-                      <p className="text-xs text-center mt-2 text-gray-500">Jun</p>
-                    </div>
-                    <div className="flex-1 flex flex-col justify-end">
-                      <div className="bg-[#3F3D56]/30 h-[85%] rounded-t-md"></div>
-                      <p className="text-xs text-center mt-2 text-gray-500">Jul</p>
-                    </div>
-                    <div className="flex-1 flex flex-col justify-end">
-                      <div className="bg-[#3F3D56]/30 h-[80%] rounded-t-md"></div>
-                      <p className="text-xs text-center mt-2 text-gray-500">Aug</p>
-                    </div>
-                    <div className="flex-1 flex flex-col justify-end">
-                      <div className="bg-[#3F3D56]/30 h-[90%] rounded-t-md"></div>
-                      <p className="text-xs text-center mt-2 text-gray-500">Sep</p>
-                    </div>
-                    <div className="flex-1 flex flex-col justify-end">
-                      <div className="bg-[#3F3D56]/30 h-[85%] rounded-t-md"></div>
-                      <p className="text-xs text-center mt-2 text-gray-500">Oct</p>
-                    </div>
-                    <div className="flex-1 flex flex-col justify-end">
-                      <div className="bg-[#3F3D56]/30 h-[75%] rounded-t-md"></div>
-                      <p className="text-xs text-center mt-2 text-gray-500">Nov</p>
-                    </div>
-                    <div className="flex-1 flex flex-col justify-end">
-                      <div className="bg-[#3F3D56]/30 h-[95%] rounded-t-md"></div>
-                      <p className="text-xs text-center mt-2 text-gray-500">Dec</p>
-                    </div>
+                    {(() => {
+                      // Create an array of months
+                      const months = [
+                        "Jan",
+                        "Feb",
+                        "Mar",
+                        "Apr",
+                        "May",
+                        "Jun",
+                        "Jul",
+                        "Aug",
+                        "Sep",
+                        "Oct",
+                        "Nov",
+                        "Dec",
+                      ]
+
+                      // Group transactions by month
+                      const monthlyRevenue = Array(12).fill(0)
+
+                      if (dashboardInfo?.manager_transactions) {
+                        dashboardInfo.manager_transactions.forEach((transaction) => {
+                          const date = new Date(transaction.date)
+                          const month = date.getMonth()
+                          monthlyRevenue[month] += transaction.amount
+                        })
+                      }
+
+                      // Find the maximum revenue for scaling
+                      const maxRevenue = Math.max(...monthlyRevenue, 1) // Avoid division by zero
+
+                      // Current month for highlighting
+                      const currentMonth = new Date().getMonth()
+
+                      return months.map((month, index) => {
+                        const height = monthlyRevenue[index] > 0 ? (monthlyRevenue[index] / maxRevenue) * 100 : 0
+
+                        const isCurrentMonth = index === currentMonth
+                        const isPastMonth = index <= currentMonth
+
+                        return (
+                          <div key={month} className="flex-1 flex flex-col justify-end">
+                            <div
+                              className={`${isPastMonth ? "bg-[#3F3D56]" : "bg-[#3F3D56]/30"} ${isCurrentMonth ? "ring-2 ring-[#3F3D56]" : ""} h-[${Math.max(height, 5)}%] rounded-t-md relative group`}
+                            >
+                              {monthlyRevenue[index] > 0 && (
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-xs rounded py-1 px-2 whitespace-nowrap">
+                                  €{monthlyRevenue[index]}
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-xs text-center mt-2 text-gray-500">{month}</p>
+                          </div>
+                        )
+                      })
+                    })()}
                   </div>
                 </div>
               </div>
@@ -1434,50 +1671,47 @@ export default function ManagerDashboard() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {eventParticipants.map((participant) => {
-                        const isRewarded = rewardedIds.includes(participant.id);
+                      const isRewarded = rewardedIds.includes(participant.id)
 
-                        return (
+                      return (
                         <tr key={participant.id}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {participant.name}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {participant.apartment_id}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                             {isRewarded ? (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                 <Check className="h-3 w-3 mr-1" />
                                 Yes
-                                </span>
+                              </span>
                             ) : (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                 <X className="h-3 w-3 mr-1" />
                                 No
-                                </span>
+                              </span>
                             )}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
                             <button
-                                onClick={() => toggleAwardStatus(participant.id)}
-                                className="px-3 py-1 text-sm rounded-md text-gray-700 hover:bg-gray-100"
+                              onClick={() => toggleAwardStatus(participant.id)}
+                              className="px-3 py-1 text-sm rounded-md text-gray-700 hover:bg-gray-100"
                             >
-                                {isRewarded ? "Selected" : "Select"}
+                              {isRewarded ? "Selected" : "Select"}
                             </button>
-                            </td>
+                          </td>
                         </tr>
-                        );
+                      )
                     })}
-                    </tbody>
-
+                  </tbody>
                 </table>
               </div>
 
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">
-                    Selected: {rewardedIds.length} participants
-                  </p>
+                  <p className="text-sm font-medium text-gray-900">Selected: {rewardedIds.length} participants</p>
                 </div>
                 <div className="flex gap-3">
                   <button
