@@ -452,7 +452,7 @@ export default function CreateListing() {
         formData.append('images', file)
       })
   
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/listing/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/listing/create`, {
         method: 'POST',
         body: formData,
       })
