@@ -828,7 +828,6 @@ export default function ManagerDashboard() {
                           )}
 
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button className="text-[#3F3D56] hover:text-[#2d2b40] mr-3">Edit</button>
                             <button className="text-red-600 hover:text-red-800">Remove</button>
                           </td>
                         </tr>
@@ -967,7 +966,6 @@ export default function ManagerDashboard() {
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <button className="text-[#3F3D56] hover:text-[#2d2b40] mr-3">Edit</button>
                               {event.status === "active" ? (
                                 <button
                                   onClick={() => handleConcludeEvent(event)}
@@ -1281,7 +1279,6 @@ export default function ManagerDashboard() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button className="text-[#3F3D56] hover:text-[#2d2b40] mr-3">View</button>
-                            <button className="text-[#3F3D56] hover:text-[#2d2b40] mr-3">Edit</button>
                             <button className="text-red-600 hover:text-red-800">Remove</button>
                           </td>
                         </tr>
