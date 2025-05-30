@@ -350,12 +350,12 @@ export default function Dashboard() {
 
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <div className="flex flex-col items-center">
-                    <span className="text-xl font-bold text-gray-900">${currentRent.base_amount}</span>
+                    <span className="text-xl font-bold text-gray-900">{currentRent.base_amount} €</span>
                     <div className="flex items-center gap-1 text-red-500">
-                      <span className="text-lg">-${discountAmount}</span>
+                      <span className="text-lg">-{discountAmount} €</span>
                     </div>
                     <div className="w-24 h-px bg-gray-200 my-2"></div>
-                    <span className="text-2xl font-bold text-gray-900">${currentRent.final_amount}</span>
+                    <span className="text-2xl font-bold text-gray-900">{currentRent.final_amount} €</span>
                   </div>
                 </div>
               </div>
@@ -366,7 +366,7 @@ export default function Dashboard() {
                     <span className="text-gray-600">Discount Progress</span>
                     <div className="flex items-center">
                       <span className="text-sm font-medium text-gray-900">
-                        ${discountAmount}/${maxDiscout}
+                        {discountAmount} € / {maxDiscout} €
                       </span>
                     </div>
                   </div>
@@ -702,7 +702,7 @@ export default function Dashboard() {
                               movement.type === "deposit" ? "text-green-600" : "text-red-600"
                             }`}
                           >
-                            {movement.type === "deposit" ? "+" : "-"}${movement.amount.toFixed(2)}
+                            {movement.type === "deposit" ? "+" : "-"} {movement.amount.toFixed(2)} €
                           </td>
                         </tr>
                       ))}
