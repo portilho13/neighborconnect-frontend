@@ -26,9 +26,6 @@ export default function Login() {
 
   const router = useRouter()
 
-  const userI = useUserStore((state) => state.user);
-
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({
@@ -204,7 +201,7 @@ export default function Login() {
 
             <div className="mt-6 text-center">
               <p className="text-white/80">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link href="/register" className="text-[#4987FF] hover:underline">
                   Sign Up
                 </Link>

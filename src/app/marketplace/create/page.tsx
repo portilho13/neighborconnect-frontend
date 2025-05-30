@@ -343,6 +343,14 @@ export default function CreateListing() {
 
   const { user, isAuthenticated, hasHydrated } = useUserStore();
 
+    useEffect(() => {
+    if (!hasHydrated) return
+
+    if (!isAuthenticated) {
+      router.push("/login/client")
+    }
+  }, [hasHydrated, isAuthenticated, user])
+
   // Clear errors when fields are updated
   useEffect(() => {
     const newErrors = { ...errors }

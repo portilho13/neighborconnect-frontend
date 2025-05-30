@@ -6,9 +6,6 @@ import Image from "next/image"
 import { ArrowLeft, Wallet, CreditCard } from "lucide-react"
 import { useRouter } from "next/navigation"
 import useUserStore from "../../../../lib/userStore"
-import { AccountDetail } from "../../../../lib/types/AccountDetail"
-
-
 
 interface FormData {
   firstName: string
@@ -33,19 +30,19 @@ export default function AddFunds() {
     phone: "",
     email: "",
   })
-  const [accountDetail, setAccountDetail] = useState<AccountDetail>()
   const [paymentType, setPaymentType] = useState<string>("credit card")
 
-  // Mock account details
-  const mockAccountDetail: AccountDetail = {
-    id: 1,
-    accountNumber: 123456789,
-    balance: "350.00",
-    currency: "USD",
-    userId: 1,
-  }
 
   const { user, isAuthenticated, hasHydrated } = useUserStore()
+  const router = useRouter()
+
+    useEffect(() => {
+    if (!hasHydrated) return
+
+    if (!isAuthenticated) {
+      router.push("/login/client")
+    }
+  }, [hasHydrated, isAuthenticated, user, router])
 
 
   const fees = 5 // Service and processing fees
@@ -80,6 +77,11 @@ export default function AddFunds() {
             "user_id": user?.id
         })
       })
+      
+      if (!res.ok) {
+        const errorMessage = await res.text()
+        throw new Error(errorMessage || "Failed to fetch transactoions")
+      }
 
 
       // Redirect after successful payment
@@ -91,18 +93,7 @@ export default function AddFunds() {
     }
   }
 
-  const router = useRouter()
 
-  // Fetch data on component mount
-  useEffect(() => {
-    // Simulate API call
-    const fetchData = async () => {
-      // In a real app, this would be an actual API call
-      setAccountDetail(mockAccountDetail)
-    }
-
-    fetchData()
-  }, [])
 
   return (
     <div className="min-h-screen bg-gray-50 text-black">
@@ -280,7 +271,6 @@ export default function AddFunds() {
                 <label htmlFor="fundAmount" className="block text-sm font-medium text-gray-700">
                   Amount to Add
                 </label>
-                <span className="text-sm text-gray-500">Current Balance: ${accountDetail?.balance || "0.00"}</span>
               </div>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>

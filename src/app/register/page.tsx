@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowLeft, Eye, EyeOff, ChevronLeft, ChevronRight } from "lucide-react"

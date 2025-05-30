@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist, createJSONStorage, PersistOptions } from 'zustand/middleware';
 import { StateCreator } from 'zustand';
 
 export interface User {
@@ -30,7 +30,7 @@ interface UserState {
 
 type UserPersist = (
   config: StateCreator<UserState>,
-  options: any
+  options: PersistOptions<UserState>
 ) => StateCreator<UserState>;
 
 const EXPIRATION_TIME = 60 * 60 * 1000; // 1 hour
@@ -68,7 +68,7 @@ const customStorage = {
 
 const useUserStore = create<UserState>()(
   (persist as UserPersist)(
-    (set, get) => ({
+    (set) => ({
       user: null,
       isAuthenticated: false,
       isLoading: false,

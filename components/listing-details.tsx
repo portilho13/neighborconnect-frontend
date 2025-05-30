@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Heart, Clock, Share2, Bell, Menu } from "lucide-react"
+import { ArrowLeft, Heart, Clock, Share2 } from "lucide-react"
 import useUserStore from "../lib/userStore"
 import { BidInfo } from "../lib/types/BidInfo"
 import { Listing } from "../lib/types/Listing"
@@ -29,14 +29,12 @@ interface ListingDetailProps {
 
 export default function ListingDetail({ id }: ListingDetailProps) {
   const router = useRouter()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [listing, setListing] = useState<Listing>()
   const [isLoading, setIsLoading] = useState(true)
   const [bid, setBid] = useState<BidInfo>()
   const [bidAmount, setBidAmount] = useState("")
   const [timeLeft, setTimeLeft] = useState("")
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [imageError, setImageError] = useState(false)
   const socketRef = useRef<WebSocket | null>(null)
 
   useEffect(() => {
@@ -49,7 +47,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [listing?.expiration_date])
+  }, [listing?.expiration_date, router])
 
   // Get current image URL
   const currentImageUrl =
@@ -93,7 +91,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
     if (!isAuthenticated) {
       router.push("/login/client")
     }
-  }, [hasHydrated, isAuthenticated, user])
+  }, [hasHydrated, isAuthenticated, user, router])
 
   // Sample related listings
   const relatedListings: RelatedListing[] = [
@@ -140,7 +138,6 @@ export default function ListingDetail({ id }: ListingDetailProps) {
 
       setListing(data)
       setCurrentImageIndex(0) // Reset to first image when new listing is loaded
-      setImageError(false)
     } catch (error) {
       console.error("Error fetching listing:", error)
     } finally {
@@ -155,7 +152,6 @@ export default function ListingDetail({ id }: ListingDetailProps) {
     socketRef.current = socket
 
     socket.onmessage = (event) => {
-      const message = event.data
       try {
         const data = JSON.parse(event.data)
 
@@ -240,35 +236,6 @@ export default function ListingDetail({ id }: ListingDetailProps) {
     }
   }
 
-  const handleImageError = () => {
-    setImageError(true)
-  }
-
-  const scrollToImage = (direction: "next" | "prev") => {
-    if (!listing?.listing_photos || listing.listing_photos.length <= 1) return
-
-    const currentElement =
-      document.querySelector(".image-container:focus-within") || document.getElementById(`image-${currentImageIndex}`)
-
-    if (currentElement) {
-      const allImages = Array.from(document.querySelectorAll(".image-container"))
-      const currentIndex = allImages.indexOf(currentElement as HTMLElement)
-
-      let targetIndex
-      if (direction === "next") {
-        targetIndex = currentIndex < allImages.length - 1 ? currentIndex + 1 : 0
-      } else {
-        targetIndex = currentIndex > 0 ? currentIndex - 1 : allImages.length - 1
-      }
-
-      const targetElement = allImages[targetIndex]
-      if (targetElement) {
-        targetElement.scrollIntoView({ behavior: "smooth", block: "center" })
-        setCurrentImageIndex(targetIndex)
-      }
-    }
-  }
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -285,7 +252,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Listing Not Found</h2>
-          <p className="text-gray-600 mb-6">The listing you're looking for doesn't exist or has been removed.</p>
+          <p className="text-gray-600 mb-6">The listing you&apos;re looking for doesn&apos;t exist or has been removed.</p>
           <Link
             href="/marketplace"
             className="inline-flex items-center bg-[#3F3D56] hover:bg-[#2d2b40] text-white px-4 py-2 rounded-md transition-colors"
@@ -324,7 +291,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
               <div className="relative mb-4">
                 {listing.listing_photos && listing.listing_photos.length > 0 ? (
                   <div className="relative w-full h-[400px] rounded-xl overflow-hidden border border-gray-200">
-                    <img
+                    <Image
                       src={currentImageUrl || "/placeholder.svg"}
                       alt={`${listing.name} - Image ${currentImageIndex + 1}`}
                       className="w-full h-full object-contain"
@@ -376,7 +343,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                         currentImageIndex === index ? "border-[#3F3D56]" : "border-gray-200 hover:border-gray-300"
                       }`}
                     >
-                      <img
+                      <Image
                         src={photo.url || "/placeholder.svg?height=60&width=60"}
                         alt={`Thumbnail ${index + 1}`}
                         className="w-full h-full object-cover"
@@ -473,7 +440,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                     </button>
                   ) : (
                     <div className="px-4 py-2 rounded-md border border-gray-300 text-gray-500 text-center">
-                      You're the Seller
+                      You&apos;re the Seller
                     </div>
                   )}
 
@@ -488,7 +455,7 @@ export default function ListingDetail({ id }: ListingDetailProps) {
                 </button>
               ) : (
                 <div className="w-full text-center py-3 text-gray-500 font-medium border border-gray-300 rounded-md">
-                  You're the Seller
+                  You&apos;re the Seller
                 </div>
               )}
 

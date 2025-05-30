@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, type ChangeEvent, type FormEvent } from "react"
+import { useEffect, useState, type ChangeEvent, type FormEvent, Suspense } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { ArrowLeft, ShoppingBag, CreditCard, Clock } from "lucide-react"
@@ -19,13 +19,8 @@ interface FormData {
   email: string
 }
 
-  
-  
-  
-
-
-
-export default function Checkout() {
+// Separate component that uses useSearchParams
+function CheckoutContent() {
   const searchParams = useSearchParams()
   const idsParam = searchParams.get("ids");
   const ids: number[] = idsParam ? JSON.parse(idsParam) : [];
@@ -47,7 +42,6 @@ export default function Checkout() {
   const [timeLeftMap, setTimeLeftMap] = useState<Record<string, string>>({});
 
   const [accountDetail, setAccountDetail] = useState<AccountDetail>()
-
 
   const fees = 15 // Service and processing fees
   const total = fees
@@ -86,49 +80,47 @@ export default function Checkout() {
         console.error(error);
       }
   };
-  
 
   const router = useRouter()
 
-  const fetchPendingTransactions = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/transaction?user_id=${user?.id.toString()}`)
-      if (!res.ok) {
-        const errorMessage = await res.text()
-        throw new Error(errorMessage || "Failed to fetch transactoions")
-      }
+        const fetchAccount = async () => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/account?user_id=${user?.id.toString()}`)
+          if (!res.ok) {
+            const errorMessage = await res.text()
+            throw new Error(errorMessage || "Failed to fetch transactions")
+          }
 
-      const data: TransactionJson[] = await res.json()
+          const data: AccountDetail = await res.json()
 
-      const pendingTractionsArray: TransactionJson[] = []
-      data.forEach((transaction: TransactionJson) => {
-        if (ids.includes(transaction.id)) {
-            pendingTractionsArray.push(transaction)
+          setAccountDetail(data)
+        } catch (error) {
+          console.error(error)
         }
-      })
-
-      setPendingTransactions(pendingTractionsArray)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  const fetchAccount = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/account?user_id=${user?.id.toString()}`)
-      if (!res.ok) {
-        const errorMessage = await res.text()
-        throw new Error(errorMessage || "Failed to fetch transactoions")
       }
 
-      const data: AccountDetail = await res.json()
+            const fetchPendingTransactions = async () => {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/transaction?user_id=${user?.id.toString()}`)
+          if (!res.ok) {
+            const errorMessage = await res.text()
+            throw new Error(errorMessage || "Failed to fetch transactions")
+          }
 
+          const data: TransactionJson[] = await res.json()
 
-      setAccountDetail(data)
-    } catch (error) {
-      console.error(error)
-    }
-  }
+          const pendingTractionsArray: TransactionJson[] = []
+          data.forEach((transaction: TransactionJson) => {
+            if (ids.includes(transaction.id)) {
+                pendingTractionsArray.push(transaction)
+            }
+          })
+
+          setPendingTransactions(pendingTractionsArray)
+        } catch (error) {
+          console.error(error)
+        }
+      }
 
   useEffect(() => {
     if (!hasHydrated) return
@@ -136,11 +128,11 @@ export default function Checkout() {
     if (!isAuthenticated) {
       router.push("/login/client")
     } else if (user?.apartmentId) {
+
       fetchPendingTransactions()
       fetchAccount()
     }
   }, [hasHydrated, isAuthenticated, user])
-
 
   useEffect(() => {
     const updateTimes = () => {
@@ -175,7 +167,6 @@ export default function Checkout() {
     const timer = setInterval(updateTimes, 1000);
     return () => clearInterval(timer);
   }, [pendingTransactions]);
-
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -466,5 +457,26 @@ export default function Checkout() {
         </div>
       </footer>
     </div>
+  )
+}
+
+// Loading component for Suspense fallback
+function CheckoutLoading() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#3F3D56] mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading checkout...</p>
+      </div>
+    </div>
+  )
+}
+
+// Main component with Suspense wrapper
+export default function Checkout() {
+  return (
+    <Suspense fallback={<CheckoutLoading />}>
+      <CheckoutContent />
+    </Suspense>
   )
 }

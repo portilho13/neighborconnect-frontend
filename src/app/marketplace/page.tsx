@@ -53,40 +53,13 @@ export default function Marketplace() {
     router.push(`http://localhost:3000/marketplace/${listing_id}`)
   }
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [listings, setListings] = useState<Listing[]>([])
   const [myAuctions, setMyAuctions] = useState<Listing[]>([])
-  const user = useUserStore((state) => state.user)
 
   const [categories, setCategories] = useState<Category[]>([])
 
-  // Trending auctions data
-  const trendingAuctions = [
-    {
-      name: "Hermes Sculpture",
-      image: "/placeholder.svg?height=200&width=200",
-      currentBid: 1500,
-      buyNowPrice: 1520,
-    },
-    {
-      name: "Hermes Sculpture",
-      image: "/placeholder.svg?height=200&width=200",
-      currentBid: 1500,
-      buyNowPrice: 1520,
-    },
-    {
-      name: "Gucci Painting",
-      image: "/placeholder.svg?height=200&width=200",
-      currentBid: 4400,
-      buyNowPrice: 4450,
-    },
-    {
-      name: "Gucci Painting",
-      image: "/placeholder.svg?height=200&width=200",
-      currentBid: 4400,
-      buyNowPrice: 4450,
-    },
-  ]
+  const { user, isAuthenticated, hasHydrated } = useUserStore();
+
 
   const fetchListings = async () => {
     try {
@@ -130,9 +103,16 @@ export default function Marketplace() {
     }
   }
 
-  useEffect(() => {
-    fetchListings(), fetchCategories()
-  }, [])
+    useEffect(() => {
+      if (!hasHydrated) return
+
+      if (!isAuthenticated) {
+        router.push("/login/client")
+      } else if (user?.apartmentId) {
+      fetchListings(), fetchCategories()
+      }
+  }, [hasHydrated, isAuthenticated, user])
+
 
   return (
     <div className="min-h-screen bg-gray-50">

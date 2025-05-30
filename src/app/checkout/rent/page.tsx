@@ -43,10 +43,6 @@ export default function PayRent() {
 
   const { user, isAuthenticated, hasHydrated } = useUserStore()
 
-  const subtotal = pendingRentPayment ? pendingRentPayment.final_amount : 0
-  const rawReduction = pendingRentPayment?.reduction ?? 0;
-  const reduction = Math.round(rawReduction * 100) / 100;
-  const total = subtotal - subtotal * reduction;
   
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -93,6 +89,7 @@ export default function PayRent() {
 
   const router = useRouter()
 
+
   // Fetch account details
   const fetchAccount = async () => {
     try {
@@ -136,7 +133,7 @@ export default function PayRent() {
       fetchAccount()
       fetchRentPayment()
     }
-  }, [hasHydrated, isAuthenticated, user, rentId])
+  }, [hasHydrated, isAuthenticated, user, rentId, router])
 
   // Update countdown timer
   useEffect(() => {

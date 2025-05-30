@@ -25,6 +25,8 @@ import type { AccountDetail } from "../../../lib/types/AccountDetail"
 import type { TransactionJson } from "../../../lib/types/TransactionJson"
 import type { AccountMovement } from "../../../lib/types/AccountMovement"
 import Header from "../../../components/header"
+import { CommunityEvent } from "../../../lib/types/CommunityEvent"
+import Image from "next/image"
 
 const months = [
   "January",
@@ -72,7 +74,7 @@ export default function Dashboard() {
   const [neighborPopupOpen, setNeighborPopupOpen] = useState(false)
   const [apartmentPopupOpen, setApartmentPopupOpen] = useState(false)
 
-  const [events, setEvents] = useState<any[]>([])
+  const [events, setEvents] = useState<CommunityEvent[]>([])
 
   const { user, isAuthenticated, hasHydrated } = useUserStore()
 
@@ -553,7 +555,7 @@ export default function Dashboard() {
                             neighbor.apartment_id.toString().toLowerCase().includes(searchTerm.toLowerCase()),
                         ).length === 0 && (
                           <div className="text-center py-4 text-gray-500 text-sm">
-                            No neighbors found matching "{searchTerm}"
+                            No neighbors found matching &quot;{searchTerm}&quot;
                           </div>
                         )}
                       </div>
@@ -749,7 +751,7 @@ export default function Dashboard() {
                     >
                       <div className="h-32 relative">
                         {event.event_image ? (
-                          <img
+                          <Image
                             src={event.event_image || "/placeholder.svg"}
                             alt={event.name}
                             className="w-full h-full object-cover"

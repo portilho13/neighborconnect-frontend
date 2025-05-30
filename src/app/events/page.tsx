@@ -31,67 +31,69 @@ export default function Activities() {
   }
 
   // Generate calendar days
-  const generateCalendarDays = (): CalendarDay[] => {
-    const now = new Date()
-    const currentMonth = now.getMonth()
-    const currentYear = now.getFullYear()
-    const today = now.getDate()
+const generateCalendarDays = (): CalendarDay[] => {
+  const now = new Date()
+  const currentMonth = now.getMonth()
+  const currentYear = now.getFullYear()
+  const today = now.getDate()
 
-    // First day of the month and how many days in the month
-    const firstDay = new Date(currentYear, currentMonth, 1)
-    const lastDay = new Date(currentYear, currentMonth + 1, 0)
-    const daysInMonth = lastDay.getDate()
-    const startingDayOfWeek = firstDay.getDay()
+  const firstDay = new Date(currentYear, currentMonth, 1)
+  const lastDay = new Date(currentYear, currentMonth + 1, 0)
+  const daysInMonth = lastDay.getDate()
+  const startingDayOfWeek = firstDay.getDay()
 
-    // Days from previous month
-    const prevMonth = new Date(currentYear, currentMonth - 1, 0)
-    const daysInPrevMonth = prevMonth.getDate()
+  const prevMonth = new Date(currentYear, currentMonth - 1, 0)
+  const daysInPrevMonth = prevMonth.getDate()
 
-    const days: CalendarDay[] = []
+  const days: CalendarDay[] = []
 
-    // Add days from previous month
-    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
-      const day = daysInPrevMonth - i
-      days.push({
-        day,
-        isCurrentMonth: false,
-        isToday: false,
-        hasEvent: false,
-      })
-    }
+  // Default events to empty array if null or undefined
+  const safeEvents = Array.isArray(events) ? events : []
 
-    // Add days from current month
-    for (let day = 1; day <= daysInMonth; day++) {
-      const hasEvent = events.some((event) => {
-        const eventDate = new Date(event.date_time)
-        return (
-          eventDate.getDate() === day &&
-          eventDate.getMonth() === currentMonth &&
-          eventDate.getFullYear() === currentYear
-        )
-      })
-
-      days.push({
-        day,
-        isCurrentMonth: true,
-        isToday: day === today,
-        hasEvent,
-      })
-    }
-
-    // Add days from next month to fill the grid (42 days total - 6 weeks)
-    const remainingDays = 42 - days.length
-    for (let day = 1; day <= remainingDays; day++) {
-      days.push({
-        day,
-        isCurrentMonth: false,
-        isToday: false,
-        hasEvent: false,
-      })
-    }
-
-    return days
+  // Add days from previous month
+  for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+    const day = daysInPrevMonth - i
+    days.push({
+      day,
+      isCurrentMonth: false,
+      isToday: false,
+      hasEvent: false,
+    })
   }
+
+  // Add days from current month
+  for (let day = 1; day <= daysInMonth; day++) {
+    const hasEvent = safeEvents.some((event: CommunityEvent) => {
+      const eventDate = new Date(event.date_time)
+      return (
+        eventDate.getDate() === day &&
+        eventDate.getMonth() === currentMonth &&
+        eventDate.getFullYear() === currentYear
+      )
+    })
+
+    days.push({
+      day,
+      isCurrentMonth: true,
+      isToday: day === today,
+      hasEvent,
+    })
+  }
+
+  // Add days from next month to fill the grid (42 days total - 6 weeks)
+  const remainingDays = 42 - days.length
+  for (let day = 1; day <= remainingDays; day++) {
+    days.push({
+      day,
+      isCurrentMonth: false,
+      isToday: false,
+      hasEvent: false,
+    })
+  }
+
+  return days
+}
+
 
   const calendarDays = generateCalendarDays()
 
@@ -113,7 +115,7 @@ export default function Activities() {
   }
 
   const applyFilters = () => {
-    let filtered = [...events]
+    let filtered = [...(events || [])];
 
     // Filter by date range
     if (startDate) {
@@ -363,7 +365,7 @@ export default function Activities() {
                       <div className="flex gap-2">
                         {joinedEventIds.includes(event.id) ? (
                           <div className="flex-1 bg-gray-100 text-gray-500 py-2 rounded-md text-sm font-medium text-center cursor-not-allowed">
-                            You're already joined
+                            You&apos;re already joined
                           </div>
                         ) : (
                           <button

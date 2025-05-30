@@ -38,7 +38,6 @@ export default function ManagerDashboard() {
   const [dashboardInfo, setDashboardInfo] = useState<ManagerDashboardInfo>()
   const [eventParticipants, setEventParticipants] = useState<UserInfo[]>([])
   const [rewardedIds, setRewardedIds] = useState<number[]>([])
-  const [activeConcludeEventId, setActiveConcludeEventId] = useState<number | null>(null)
 
   const router = useRouter()
 
@@ -118,62 +117,9 @@ export default function ManagerDashboard() {
     },
   ]
 
-  // Mock data for apartments
-  const apartments = [
-    { id: "A101", status: "Occupied", resident: "Sarah Johnson", rentStatus: "Paid", lastPayment: "May 1, 2023" },
-    { id: "A102", status: "Vacant", resident: "-", rentStatus: "-", lastPayment: "-" },
-    { id: "A103", status: "Occupied", resident: "Michael Chen", rentStatus: "Overdue", lastPayment: "April 1, 2023" },
-    { id: "A104", status: "Occupied", resident: "Emily Davis", rentStatus: "Paid", lastPayment: "May 2, 2023" },
-    { id: "A105", status: "Maintenance", resident: "-", rentStatus: "-", lastPayment: "-" },
-  ]
-
   const events = dashboardInfo?.events
 
-  // Mock data for marketplace listings
-  const marketplaceListings = [
-    {
-      id: 1,
-      title: "Vintage Coffee Table",
-      seller: "Michael Chen",
-      price: "$120",
-      listed: "May 5, 2023",
-      status: "Active",
-    },
-    {
-      id: 2,
-      title: "Mountain Bike",
-      seller: "Sarah Johnson",
-      price: "$350",
-      listed: "May 3, 2023",
-      status: "Active",
-    },
-    {
-      id: 3,
-      title: "Desk Lamp",
-      seller: "Emily Davis",
-      price: "$25",
-      listed: "May 1, 2023",
-      status: "Active",
-    },
-    {
-      id: 4,
-      title: "Blender",
-      seller: "David Wilson",
-      price: "$45",
-      listed: "April 28, 2023",
-      status: "Sold",
-    },
-  ]
-
-  // Mock data for financial overview
-  const financialData = {
-    totalRevenue: "$24,500",
-    rentCollected: "$22,000",
-    marketplaceFees: "$1,500",
-    eventFees: "$1,000",
-    expenses: "$8,200",
-    netProfit: "$16,300",
-  }
+  
 
   // Function to handle concluding an event
   const handleConcludeEvent = async (event: CommunityEvent) => {
@@ -507,7 +453,7 @@ export default function ManagerDashboard() {
             <div>
               <div className="mb-6">
                 <h1 className="text-2xl font-bold text-gray-900">Manager Dashboard</h1>
-                <p className="text-gray-600">Welcome back, {user?.name}. Here's what's happening today.</p>
+                <p className="text-gray-600">Welcome back, {user?.name}. Here&apos;s what&apos;s happening today.</p>
               </div>
 
               {/* Stats Grid */}

@@ -6,21 +6,12 @@ import { Search, Menu, ShoppingBagIcon, Clock, LogOut, Camera, ChevronDown } fro
 
 import useUserStore from "../lib/userStore"
 import { useRouter } from "next/navigation"
-import type { Rent } from "../lib/types/Rent"
 import type { TransactionJson } from "../lib/types/TransactionJson"
 import Image from "next/image"
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  const userName = "Rodrigo Moura"
-  const currentDate = new Date()
-  const options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" }
-  const formattedDate = currentDate.toLocaleDateString("pt-PT", options)
-  const endDate = "Jan 31"
-
-  const [isLoading, setIsLoading] = useState(false)
-  const [rents, setRents] = useState<Rent[]>([])
   const [cartOpen, setCartOpen] = useState(false)
   const [pendingTransactions, setPendingTransactions] = useState<TransactionJson[]>([])
 
@@ -67,21 +58,6 @@ export default function Header() {
 
   const router = useRouter()
 
-  const fetchPendingTransactions = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/transaction?user_id=${user?.id.toString()}`)
-      if (!res.ok) {
-        const errorMessage = await res.text()
-        throw new Error(errorMessage || "Failed to fetch transactoions")
-      }
-
-      const data: TransactionJson[] = await res.json()
-
-      setPendingTransactions(data)
-    } catch (error) {
-      console.error(error)
-    }
-  }
 
   const handleLogout = () => {
     logout()
@@ -124,16 +100,34 @@ const handleProfilePictureChange = () => {
   input.click()
 }
 
+    const fetchPendingTransactions = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/transaction?user_id=${user?.id.toString()}`)
+        if (!res.ok) {
+          const errorMessage = await res.text()
+          throw new Error(errorMessage || "Failed to fetch transactions")
+        }
 
-  useEffect(() => {
-    if (!hasHydrated) return
-
-    if (!isAuthenticated) {
-      router.push("/login/client")
-    } else if (user?.apartmentId) {
-      fetchPendingTransactions()
+        const data: TransactionJson[] = await res.json()
+        console.log(data)
+        setPendingTransactions(data)
+      } catch (error) {
+        console.error(error)
+      }
     }
-  }, [hasHydrated, isAuthenticated, user])
+
+
+useEffect(() => {
+  if (!hasHydrated) return;
+
+  if (!isAuthenticated) {
+    router.push("/login/client");
+  } else if (user?.apartmentId) {
+    
+    fetchPendingTransactions();
+  }
+}, [hasHydrated, isAuthenticated, user, router]);
+
 
   // Close user menu when clicking outside
   useEffect(() => {
