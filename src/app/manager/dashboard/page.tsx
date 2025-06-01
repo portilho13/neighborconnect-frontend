@@ -40,7 +40,7 @@ export default function ManagerDashboard() {
 
   const router = useRouter()
 
-  const { user, isAuthenticated, hasHydrated } = useUserStore()
+  const { user, isAuthenticated, hasHydrated, logout } = useUserStore()
 
   const [isLoading, setIsLoading] = useState(true)
 
@@ -70,6 +70,11 @@ export default function ManagerDashboard() {
     } catch (error) {
       console.error(error)
     }
+  }
+
+  const handleLogout = () => {
+    logout()
+    router.push("/login/manager")
   }
 
   const fetchDashboardInfo = async (id: number) => {
@@ -118,8 +123,6 @@ export default function ManagerDashboard() {
 
   const events = dashboardInfo?.events
 
-  
-
   // Function to handle concluding an event
   const handleConcludeEvent = async (event: CommunityEvent) => {
     if (!event.id) return
@@ -152,6 +155,50 @@ export default function ManagerDashboard() {
       console.error(error)
     } finally {
       setConcludeEventModal(false)
+    }
+  }
+
+  const handleDeleteApartment = async (apartmentId: number) => {
+    if (!confirm("Are you sure you want to delete this apartment? This action cannot be undone.")) {
+      return
+    }
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/apartment?apartment_id=${apartmentId}`, {
+        method: "DELETE",
+      })
+
+      if (!res.ok) throw new Error(await res.text())
+
+      // Refresh dashboard data
+      if (user?.id) {
+        await fetchDashboardInfo(user.id)
+      }
+    } catch (error) {
+      console.error("Error deleting apartment:", error)
+      alert("Failed to delete apartment. Please try again.")
+    }
+  }
+
+  const handleDeleteListing = async (listingId: number) => {
+    if (!confirm("Are you sure you want to delete this listing? This action cannot be undone.")) {
+      return
+    }
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/listing?listing_id=${listingId}`, {
+        method: "DELETE",
+      })
+
+      if (!res.ok) throw new Error(await res.text())
+
+      // Refresh dashboard data
+      if (user?.id) {
+        await fetchDashboardInfo(user.id)
+      }
+    } catch (error) {
+      console.error("Error deleting listing:", error)
+      alert("Failed to delete listing. Please try again.")
     }
   }
 
@@ -241,7 +288,6 @@ export default function ManagerDashboard() {
               <DollarSign className="mr-3 h-5 w-5" />
               Finances
             </button>
-
           </nav>
         </div>
 
@@ -254,7 +300,7 @@ export default function ManagerDashboard() {
               <p className="text-sm font-medium text-gray-900">{user?.name}</p>
               <p className="text-xs text-gray-500">Building Manager</p>
             </div>
-            <button className="ml-auto p-1 rounded-full text-gray-400 hover:text-gray-500">
+            <button onClick={() => handleLogout()} className="ml-auto p-1 rounded-full text-gray-400 hover:text-gray-500">
               <LogOut className="h-5 w-5" />
             </button>
           </div>
@@ -565,6 +611,7 @@ export default function ManagerDashboard() {
                         {dashboardInfo?.events.slice(0, 3).map((event) => {
                           const eventDate = new Date(event.date_time)
                           const dateString = eventDate.toLocaleDateString("en-US", {
+                            year: "numeric",
                             month: "short",
                             day: "numeric",
                           })
@@ -828,7 +875,12 @@ export default function ManagerDashboard() {
                           )}
 
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button className="text-red-600 hover:text-red-800">Remove</button>
+                            <button
+                              onClick={() => handleDeleteApartment(apartment.id)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              Remove
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -951,7 +1003,19 @@ export default function ManagerDashboard() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                               {event.name}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{event.date_time}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {new Date(event.date_time).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              })}{" "}
+                              at{" "}
+                              {new Date(event.date_time).toLocaleTimeString("en-US", {
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: true,
+                              })}
+                            </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{event.local}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               {event.current_ocupation} | {event.capacity}
@@ -1131,7 +1195,12 @@ export default function ManagerDashboard() {
                             >
                               View
                             </button>
-                            <button className="text-red-600 hover:text-red-800">Remove</button>
+                            <button
+                              onClick={() => handleDeleteListing(listing.id)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              Remove
+                            </button>
                           </td>
                         </tr>
                       ))}
