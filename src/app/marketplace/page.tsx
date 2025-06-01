@@ -8,44 +8,8 @@ import useUserStore from "../../../lib/userStore"
 import { useRouter } from "next/navigation"
 import Header from "../../../components/header"
 import Footer from "../../../components/footer"
-
-interface Listing_Photo {
-  id: number
-  url: string
-}
-
-interface SellerInfo {
-  id: number
-  name: string
-}
-
-interface BidInfo {
-  id: number | null
-  bid_ammount: number
-  users_id: number | null
-  listing_id: number
-}
-
-interface Listing {
-  id: number
-  name: string
-  description: string
-  buy_now_price: number
-  startPrice: number
-  current_bid: BidInfo
-  createdAt: Date
-  expiration_date: Date
-  status: string
-  seller: SellerInfo
-  category_id: Category
-  listing_photos: Listing_Photo[]
-}
-
-interface Category {
-  id: number
-  name: string
-  url: string
-}
+import { Listing } from "../../../lib/types/Listing"
+import { Category } from "../../../lib/types/Category"
 
 export default function Marketplace() {
   const router = useRouter()
@@ -59,8 +23,9 @@ export default function Marketplace() {
 
   const [categories, setCategories] = useState<Category[]>([])
 
-  const { user, isAuthenticated, hasHydrated } = useUserStore();
+  const { user, isAuthenticated, hasHydrated } = useUserStore()
 
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null)
 
   const fetchListings = async () => {
     try {
@@ -104,16 +69,20 @@ export default function Marketplace() {
     }
   }
 
-    useEffect(() => {
-      if (!hasHydrated) return
+  // Filter listings based on selected category
+  const filteredListings = selectedCategory
+    ? listings.filter((listing) => listing.category.id === selectedCategory)
+    : listings
 
-      if (!isAuthenticated) {
-        router.push("/login/client")
-      } else if (user?.apartmentId) {
+  useEffect(() => {
+    if (!hasHydrated) return
+
+    if (!isAuthenticated) {
+      router.push("/login/client")
+    } else if (user?.apartmentId) {
       fetchListings(), fetchCategories()
-      }
+    }
   }, [hasHydrated, isAuthenticated, user])
-
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -138,45 +107,51 @@ export default function Marketplace() {
             <div className="mb-12">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Categories</h2>
-                <Link
-                  href="/marketplace/categories"
-                  className="text-[#3F3D56] text-sm hover:underline flex items-center"
-                >
-                  See All
-                </Link>
               </div>
 
               <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={() => setSelectedCategory(null)}
+                  className={`px-4 py-2 rounded-full border transition-all duration-200 font-medium text-sm ${
+                    selectedCategory === null
+                      ? "bg-[#3F3D56] text-white border-[#3F3D56]"
+                      : "bg-white hover:bg-[#3F3D56] text-[#3F3D56] hover:text-white border-[#3F3D56]"
+                  }`}
+                >
+                  All
+                </button>
                 {categories.map((category, index) => (
-                  <Link
+                  <button
                     key={index}
-                    href={`/marketplace/category/${category.name.toLowerCase()}`}
-                    className="bg-white hover:bg-[#3F3D56] text-[#3F3D56] hover:text-white px-4 py-2 rounded-full border border-[#3F3D56] transition-all duration-200 font-medium text-sm"
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`px-4 py-2 rounded-full border transition-all duration-200 font-medium text-sm ${
+                      selectedCategory === category.id
+                        ? "bg-[#3F3D56] text-white border-[#3F3D56]"
+                        : "bg-white hover:bg-[#3F3D56] text-[#3F3D56] hover:text-white border-[#3F3D56]"
+                    }`}
                   >
                     {category.name}
-                  </Link>
+                  </button>
                 ))}
               </div>
             </div>
           </>
         )}
 
-        {listings && listings.length > 0 && (
+        {filteredListings && filteredListings.length > 0 && (
           <>
             {/* Trending Auction section */}
             <div className="mb-12">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Trending Auction</h2>
-                <Link
-                  href="/dashboard/marketplace/trending"
-                  className="text-[#3F3D56] text-sm hover:underline flex items-center"
-                >
-                  See All
-                </Link>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {selectedCategory
+                    ? `${categories.find((cat) => cat.id === selectedCategory)?.name} Auctions`
+                    : "Trending Auction"}
+                </h2>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {listings.map((auction, index) => (
+                {filteredListings.map((auction, index) => (
                   <div
                     key={index}
                     className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md hover:border-[#3F3D56]/20"
@@ -205,7 +180,10 @@ export default function Marketplace() {
                           <span className="font-medium text-gray-900">${auction.buy_now_price}</span>
                         </div>
                       </div>
-                      <button onClick={() => router.push(`/marketplace/${auction.id}`)} className="w-full bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors">
+                      <button
+                        onClick={() => router.push(`/marketplace/${auction.id}`)}
+                        className="w-full bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors"
+                      >
                         See more
                       </button>
                     </div>
@@ -214,6 +192,15 @@ export default function Marketplace() {
               </div>
             </div>
           </>
+        )}
+
+        {selectedCategory && filteredListings.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No listings found in this category.</p>
+            <button onClick={() => setSelectedCategory(null)} className="mt-4 text-[#3F3D56] hover:underline">
+              View all listings
+            </button>
+          </div>
         )}
 
         {myAuctions && myAuctions.length > 0 && (
@@ -260,7 +247,10 @@ export default function Marketplace() {
                           <span className="font-medium text-gray-900">${auction.buy_now_price}</span>
                         </div>
                       </div>
-                      <button onClick={() => router.push(`/marketplace/${auction.id}`)} className="w-full bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors">
+                      <button
+                        onClick={() => router.push(`/marketplace/${auction.id}`)}
+                        className="w-full bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors"
+                      >
                         See more
                       </button>
                     </div>
