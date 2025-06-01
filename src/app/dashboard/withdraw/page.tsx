@@ -6,6 +6,7 @@ import { ArrowLeft, Wallet, Building2, AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { AccountDetail } from "../../../../lib/types/AccountDetail"
 import useUserStore from "../../../../lib/userStore"
+import Footer from "../../../../components/footer"
 
 
 interface FormData {
@@ -497,25 +498,7 @@ useEffect(() => {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-8 px-4 mt-12">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-600 text-sm mb-4 md:mb-0">© 2023 NeighborConnect. All rights reserved</p>
-            <div className="flex space-x-4">
-              <Link href="/privacy-policy" className="text-gray-600 hover:text-gray-900 text-sm">
-                Privacy Policy
-              </Link>
-              <Link href="/terms" className="text-gray-600 hover:text-gray-900 text-sm">
-                Terms of Service
-              </Link>
-              <Link href="/contact" className="text-gray-600 hover:text-gray-900 text-sm">
-                Contact Us
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer></Footer>
     </div>
   )
 }
