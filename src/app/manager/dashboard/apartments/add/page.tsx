@@ -88,7 +88,7 @@ export default function AddApartmentPage() {
             <div className="h-8 w-8 rounded-md bg-[#3F3D56] flex items-center justify-center text-white mr-2">
               <span className="font-bold">NC</span>
             </div>
-            <span className="font-bold text-lg text-gray-900">NeighboorConnect</span>
+            <span className="font-bold text-lg text-gray-900">NeighborConnect</span>
           </Link>
         </div>
       </header>

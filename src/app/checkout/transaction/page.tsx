@@ -175,7 +175,7 @@ function CheckoutContent() {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link href="/dashboard" className="font-bold text-xl text-[#3F3D56]">
-              NeighboorConnect
+              NeighborConnect
             </Link>
 
             <nav className="hidden md:flex items-center space-x-6">
@@ -441,7 +441,7 @@ function CheckoutContent() {
       <footer className="bg-white border-t border-gray-200 py-8 px-4 mt-12">
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-600 text-sm mb-4 md:mb-0">© 2023 NeighboorConnect. All rights reserved</p>
+            <p className="text-gray-600 text-sm mb-4 md:mb-0">© 2023 NeighborConnect. All rights reserved</p>
             <div className="flex space-x-4">
               <Link href="/privacy-policy" className="text-gray-600 hover:text-gray-900 text-sm">
                 Privacy Policy

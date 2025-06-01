@@ -159,7 +159,7 @@ useEffect(() => {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link href="/dashboard" className="font-bold text-xl text-[#3F3D56]">
-            NeighboorConnect
+            NeighborConnect
           </Link>
 
           <nav className="hidden md:flex items-center space-x-6">

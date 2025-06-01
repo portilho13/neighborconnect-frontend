@@ -376,7 +376,7 @@ export default function Marketplace() {
         </div>
 
         <div className="container mx-auto mt-8 pt-8 border-t border-[#333] flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm mb-4 md:mb-0">© 2023 NeighboorConnect. All rights reserved</p>
+          <p className="text-gray-400 text-sm mb-4 md:mb-0">© 2023 NeighborConnect. All rights reserved</p>
           <div className="flex space-x-4">
             <Link href="#" className="text-gray-400 hover:text-white transition-colors">
               <span className="sr-only">Facebook</span>

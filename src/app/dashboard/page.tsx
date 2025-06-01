@@ -808,7 +808,7 @@ export default function Dashboard() {
       <footer className="bg-white border-t border-gray-200 py-12 px-4 mt-12">
         <div className="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="font-bold text-lg mb-4 text-gray-900">NeighboorConnect</h3>
+            <h3 className="font-bold text-lg mb-4 text-gray-900">NeighborConnect</h3>
             <p className="text-gray-600 text-sm mb-4">Building stronger communities through better connections.</p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-400 hover:text-gray-600 transition-colors">
