@@ -50,7 +50,7 @@ export default function Marketplace() {
   const router = useRouter()
 
   const handleMarketListingRedirect = (listing_id: number) => {
-    router.push(`http://localhost:3000/marketplace/${listing_id}`)
+    router.push(`${process.env.NEXT_PUBLIC_API_URL}/marketplace/${listing_id}`)
   }
 
   const [listings, setListings] = useState<Listing[]>([])
@@ -204,7 +204,7 @@ export default function Marketplace() {
                           <span className="font-medium text-gray-900">${auction.buy_now_price}</span>
                         </div>
                       </div>
-                      <button className="w-full bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors">
+                      <button onClick={() => router.push(`/marketplace/${auction.id}`)} className="w-full bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors">
                         See more
                       </button>
                     </div>
@@ -259,7 +259,7 @@ export default function Marketplace() {
                           <span className="font-medium text-gray-900">${auction.buy_now_price}</span>
                         </div>
                       </div>
-                      <button className="w-full bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors">
+                      <button onClick={() => router.push(`/marketplace/${auction.id}`)} className="w-full bg-[#3F3D56]/10 hover:bg-[#3F3D56]/20 text-[#3F3D56] py-2 rounded-md text-sm font-medium transition-colors">
                         See more
                       </button>
                     </div>
