@@ -253,7 +253,7 @@ export default function CreateEvent() {
     if (eventDate) delete newErrors.eventDate
     if (eventImage) delete newErrors.eventImage
     setErrors(newErrors)
-  }, [name, capacity, local, duration, eventDate, eventImage]) // Removed 'errors' from dependencies
+  }, [name, capacity, local, duration, eventDate, eventImage])
 
 
   // Check authentication
